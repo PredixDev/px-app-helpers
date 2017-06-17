@@ -54,11 +54,13 @@ gulp.task('sass', function() {
     .pipe(buildCSS())
     .pipe(stylemod({
       moduleId: function(file) {
-        console.log(path.basename);
         return path.basename(file.path, path.extname(file.path)) + '-styles';
       }
     }))
-    .pipe(gulp.dest('css'))
+    .pipe(rename(file => {
+      file.dirname = file.dirname.replace('sass', 'css');
+    }))
+    .pipe(gulp.dest('./'))
     .pipe(browserSync.stream({match: 'css/*.html'}));
 });
 
