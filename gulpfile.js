@@ -101,8 +101,8 @@ gulp.task('serve', function() {
   });
 
   gulp.watch(ES6_SRC, ['transpile']);
-  gulp.watch(['sass/*.scss'], ['sass']);
-  gulp.watch(['css/*-styles.html', '*.html', `px*/dist/*.js`, 'demo/*.html']).on('change', browserSync.reload);
+  gulp.watch(['px*/sass/*.scss'], ['sass']);
+  gulp.watch(['px*/css/*-styles.html', 'px*/*.html', `px*/dist/*.js`, 'demo/*.html']).on('change', browserSync.reload);
 });
 
 gulp.task('bump:patch', function(){

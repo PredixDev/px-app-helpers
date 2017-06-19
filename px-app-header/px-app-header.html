@@ -5,6 +5,8 @@
 -->
 <link rel="import" href="../../polymer/polymer.html"/>
 
+<link rel="import" href="../../px-branding-bar/px-branding-bar.html"/>
+<link rel="import" href="../../px-app-nav/px-app-nav.html"/>
 <link rel="import" href="css/px-app-header-styles.html">
 
 <!--
@@ -23,8 +25,8 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 <dom-module id="px-app-header">
   <template>
     <style include="px-app-header-styles"></style>
-    <a href="javascript:" on-click="handleClick">Click here to increment counter:</a>
-    <span>{{counterValue}}</span>
+    <px-branding-bar></px-branding-bar>
+    <px-app-nav items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'></px-app-nav>
   </template>
 </dom-module>
 <script src="dist/px-app-header.js"></script>
