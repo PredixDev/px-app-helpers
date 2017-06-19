@@ -1,7 +1,7 @@
 (function() {
   Polymer({
 
-    is: 'px-app-header', 
+    is: 'px-app-header',
 
     properties: {
       /**

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PX App Header demo</title>
+    <script>
+      // Load Web Components when not supported
+      var webComponentsSupported = ('registerElement' in document
+      && 'import' in document.createElement('link')
+      && 'content' in document.createElement('template'));
+
+      if (!webComponentsSupported) {
+        var script = document.createElement('script');
+        script.src = '../../webcomponentsjs/webcomponents-lite.js';
+        document.head.appendChild(script);
+      }
+    </script>
+    <link rel="import" href="../../polymer/polymer.html">
+    <link rel="import" href="px-app-header.html">
+
+  </head>
+  <body>
+    <px-app-header></px-app-header>
+  </body>
+</html>
