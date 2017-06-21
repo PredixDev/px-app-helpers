@@ -40,6 +40,15 @@
   overflow-y: auto;
 }
 
+:host{
+  --app-toolbar-font-size: 15px;
+}
+app-toolbar{
+  padding: 0px 0px 0px 0px;
+  width: 100%;
+}
+
+
 // Trumps
 @import "inuit-clearfix/_trumps.clearfix.scss";
 @import "px-spacing-responsive-design/_trumps.spacing-responsive.scss";
