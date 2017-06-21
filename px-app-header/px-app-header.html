@@ -32,16 +32,10 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
   <template>
     <style include="px-app-header-styles"></style>
     <app-header-layout fullbleed has-scrolling-region >
-      <app-header slot="header" condenses fixed scroll-target="moo">
-      <!-- <app-header condenses fixed effects="hide-title"> -->
-        <app-toolbar style="height:27px;">
-          <px-branding-bar class="px-branding-bar__content"></px-branding-bar>
-        </app-toolbar>
-        <!-- <app-toolbar style="background-color: black; height: 10px;"></app-toolbar> -->
-        <app-toolbar sticky>
-          <px-app-nav  items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
-          </px-app-nav>
-        </app-toolbar>
+      <app-header slot="header" fixed >
+        <px-branding-bar class="px-branding-bar__content"></px-branding-bar>
+        <px-app-nav sticky vertical items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
+        </px-app-nav>
       </app-header>
       <slot id="moo"></slot>
     </app-header-layout>

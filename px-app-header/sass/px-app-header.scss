@@ -35,10 +35,6 @@
 // Objects
 
 // Component
-::slotted(div) {
-  height: 100vh;
-  overflow-y: auto;
-}
 
 :host{
   --app-toolbar-font-size: 15px;
