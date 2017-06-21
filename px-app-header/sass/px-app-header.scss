@@ -35,6 +35,10 @@
 // Objects
 
 // Component
+::slotted(div) {
+  height: 100vh;
+  overflow-y: auto;
+}
 
 // Trumps
 @import "inuit-clearfix/_trumps.clearfix.scss";

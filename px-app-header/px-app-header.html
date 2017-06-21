@@ -9,6 +9,12 @@
 <link rel="import" href="../../px-app-nav/px-app-nav.html"/>
 <link rel="import" href="css/px-app-header-styles.html">
 
+<link defer rel="import" href="../../app-layout/app-header/app-header.html">
+<link defer rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../../app-layout/app-header-layout/app-header-layout.html">
+<link defer rel="import" href="hide-title.html">
+
+
 <!--
 REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
@@ -24,9 +30,32 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 
 <dom-module id="px-app-header">
   <template>
-    <style include="px-app-header-styles"></style>
-    <px-branding-bar></px-branding-bar>
-    <px-app-nav items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'></px-app-nav>
+    <style include="px-app-header-styles">
+      :host{
+        --app-toolbar-font-size: 15px;
+      }
+      app-toolbar{
+        padding: 0px 0px 0px 0px;
+        width: 100%;
+      }
+      app-header{
+        /*width: 100%;*/
+      }
+    </style>
+    <app-header-layout fullbleed has-scrolling-region >
+      <app-header slot="header" condenses fixed scroll-target="moo">
+      <!-- <app-header condenses fixed effects="hide-title"> -->
+        <app-toolbar style="height:27px;">
+          <px-branding-bar class="px-branding-bar__content"></px-branding-bar>
+        </app-toolbar>
+        <!-- <app-toolbar style="background-color: black; height: 10px;"></app-toolbar> -->
+        <app-toolbar sticky>
+          <px-app-nav  items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
+          </px-app-nav>
+        </app-toolbar>
+      </app-header>
+      <slot id="moo"></slot>
+    </app-header-layout>
   </template>
 </dom-module>
 <script src="dist/px-app-header.js"></script>

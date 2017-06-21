@@ -28,10 +28,12 @@
     "polymer": "^1.7.1",
     "px-theme": "^3.0.0",
     "px-branding-bar": "^1.0.0",
-    "px-app-nav": "^2.0.0"
+    "px-app-nav": "^2.0.0",
+    "app-layout": "^2.0.0"
   },
   "devDependencies": {
     "px-starter-kit-design": "^1.0.0",
-    "px-demo": "^2.0.0"
+    "px-demo": "^2.0.0",
+    "px-card": "^1.0.0"
   }
 }
