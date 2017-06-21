@@ -16,6 +16,7 @@ const babel = require('gulp-babel');
 const rename = require('gulp-rename');
 const sourcemaps = require('gulp-sourcemaps');
 const cache = require('gulp-cached');
+const flow = require('gulp-flowtype');
 
 const sassOptions = {
   importer: importOnce,
@@ -65,7 +66,7 @@ gulp.task('sass', function() {
 });
 
 // Globbing pattern to find ES6 source files that need to be transpiled
-const ES6_SRC = 'px*/*.es6.js';
+const ES6_SRC = ['px*/*.es6.js', '!px-app-asset/**'];
 
 gulp.task('transpile', function() {
   return gulp.src(ES6_SRC)
@@ -85,7 +86,42 @@ gulp.task('transpile', function() {
     .pipe(gulp.dest('.'));
 });
 
+// Flow tasks
+const FLOW_SRC = 'px-app-asset/src/*.flow.js';
+const FLOW_DEST = 'px-app-asset';
+
+gulp.task('flow:babel', function(cb) {
+  gulp.src(FLOW_SRC, {base:'./'})
+    .pipe(babel({ plugins: ['transform-flow-strip-types'], babelrc: false }))
+    .on('error', function(err) {
+      console.error(err);
+    })
+    .pipe(rename(path => {
+      console.log(path);
+      path.dirname = `${FLOW_DEST}/`
+      path.basename = path.basename.replace('.flow', '.es6');
+      console.log(`Transpiling ${path.basename}.flow.js -> dist/${path.basename}.es6.js`);
+    }))
+    .pipe(gulp.dest(function(file){
+    console.log(file);
+    return '.';
+    }))
+    .on('end', cb);
+});
+
+gulp.task('flow', ['flow:babel'], function() {
+  gulp.src(FLOW_SRC)
+    .pipe(flow({
+      all: false,
+      weak: false,
+      killFlow: false,
+      beep: true,
+      abort: false
+    }));
+});
+
 gulp.task('watch', function() {
+  gulp.watch(FLOW_SRC, ['flow']);
   gulp.watch(ES6_SRC, ['transpile']);
   gulp.watch(['sass/*.scss'], ['sass']);
 });
@@ -100,6 +136,7 @@ gulp.task('serve', function() {
     server: ['./', 'bower_components'],
   });
 
+  gulp.watch(FLOW_SRC, ['flow']);
   gulp.watch(ES6_SRC, ['transpile']);
   gulp.watch(['px*/sass/*.scss'], ['sass']);
   gulp.watch(['px*/css/*-styles.html', 'px*/*.html', `px*/dist/*.js`, 'demo/*.html']).on('change', browserSync.reload);
@@ -124,5 +161,5 @@ gulp.task('bump:major', function(){
 });
 
 gulp.task('default', function(callback) {
-  gulpSequence('clean', 'sass', 'transpile')(callback);
+  gulpSequence('clean', 'sass', 'transpile', 'flow')(callback);
 });
