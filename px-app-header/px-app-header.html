@@ -12,7 +12,7 @@
 <link defer rel="import" href="../../app-layout/app-header/app-header.html">
 <link defer rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
 <link defer rel="import" href="../../app-layout/app-header-layout/app-header-layout.html">
-<!-- <link defer rel="import" href="hide-title.html"> -->
+<link defer rel="import" href="hide-title.html">
 
 
 <!--
@@ -32,11 +32,12 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
   <template>
     <style include="px-app-header-styles"></style>
     <app-header-layout fullbleed has-scrolling-region>
-      <app-header slot="header" fixed>
-        <px-branding-bar class="px-branding-bar__content"></px-branding-bar>
-        <px-app-nav sticky items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
+      <app-header slot="header" fixed condenses effects="hide-title">
+        <px-branding-bar sticky></px-branding-bar>
+        <px-app-nav nav-container items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
         </px-app-nav>
       </app-header>
+
       <slot></slot>
     </app-header-layout>
   </template>
