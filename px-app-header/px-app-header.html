@@ -3,16 +3,16 @@
     siblings. When this component is run from its own repo (e.g. tests, examples), we assume the server is started with
     'gulp serve' (or similar server setup) to enable correct finding of bower dependencies for local runs.
 -->
-<link rel="import" href="../../polymer/polymer.html"/>
+<link defer rel="import" href="../../polymer/polymer.html"/>
 
-<link rel="import" href="../../px-branding-bar/px-branding-bar.html"/>
-<link rel="import" href="../../px-app-nav/px-app-nav.html"/>
-<link rel="import" href="css/px-app-header-styles.html">
+<link defer rel="import" href="../../px-branding-bar/px-branding-bar.html"/>
+<link defer rel="import" href="../../px-app-nav/px-app-nav.html"/>
+<link defer rel="import" href="css/px-app-header-styles.html">
 
 <link defer rel="import" href="../../app-layout/app-header/app-header.html">
 <link defer rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
-<link rel="import" href="../../app-layout/app-header-layout/app-header-layout.html">
-<link defer rel="import" href="hide-title.html">
+<link defer rel="import" href="../../app-layout/app-header-layout/app-header-layout.html">
+<!-- <link defer rel="import" href="hide-title.html"> -->
 
 
 <!--
@@ -31,13 +31,13 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 <dom-module id="px-app-header">
   <template>
     <style include="px-app-header-styles"></style>
-    <app-header-layout fullbleed has-scrolling-region >
-      <app-header slot="header" fixed >
+    <app-header-layout fullbleed has-scrolling-region>
+      <app-header slot="header" fixed>
         <px-branding-bar class="px-branding-bar__content"></px-branding-bar>
-        <px-app-nav sticky vertical items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
+        <px-app-nav sticky items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:chart","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
         </px-app-nav>
       </app-header>
-      <slot id="moo"></slot>
+      <slot></slot>
     </app-header-layout>
   </template>
 </dom-module>
