@@ -6,18 +6,22 @@
 Polymer.AppLayout.registerEffect('hide-title', {
   setUp: function(config) {
     // the effect's config is passed to the setUp.
-    this.navContainer = { logo: Polymer.dom(this).querySelector('[nav-container]') };
-    this.navContainer.logo.style.willChange = 'transform, opacity';
+    this.navContainer = { navElement: Polymer.dom(this).querySelector('[nav-container]') };
+    this.navContainer.navHeight = parseInt(getComputedStyle(this.navContainer.navElement).height, 10);
+    this.navContainer.navElement.style.willChange = 'transform';
+    this.headerContainer = { headerElement: Polymer.dom(this).querySelector('[header-container]') };
+    this.headerContainer.headerHeight = parseInt(getComputedStyle(this.headerContainer.headerElement).height, 10);
+    // this.headerContainer.headerElement.style.willChange = 'transform, opacity';
   },
 
   run: function(progress) {
-     // the progress of the effect
-    this.transform(`translate3d(0, ${progress*35}px, 0)`, this.navContainer.logo);
+    let dy = ((this.navContainer.navHeight - this.headerContainer.headerHeight + 5) * progress);
+    this.transform(`translateY(${dy}px)`, this.navContainer.navElement);
   },
 
   tearDown: function() {
      // clean up and reset of states
-     this.navContainer.logo.style.willChange = "auto";
+     this.navContainer.navElement.style.willChange = "auto";
      delete this.navContainer;
   }
 });
