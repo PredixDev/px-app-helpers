@@ -23,7 +23,9 @@
         selected: {
           type: Object,
           notify: true,
-          value: null,
+          value: function() {
+            return this.multiSelect ? [] : null;
+          },
           observer: '_assetSelectedByReference'
         },
 
@@ -65,6 +67,9 @@
         selectedRoute: {
           type: Array,
           notify: true,
+          value: function() {
+            return [];
+          },
           observer: '_assetSelectedByRoute'
         },
 
@@ -80,7 +85,9 @@
           type: Array,
           notify: true,
           readOnly: true,
-          value: null
+          value: function() {
+            return this.multiSelect ? [] : null;
+          }
         },
 
         /**
@@ -91,7 +98,9 @@
           type: Object,
           notify: true,
           readOnly: true,
-          value: null
+          value: function() {
+            return this.multiSelect ? [] : null;
+          }
         },
 
         /**
@@ -103,7 +112,9 @@
           type: Array,
           notify: true,
           readOnly: true,
-          value: null
+          value: function() {
+            return this.multiSelect ? [] : null;
+          }
         },
 
         /**
@@ -115,11 +126,45 @@
           type: Array,
           notify: true,
           readOnly: true,
-          value: null
-        }
+          value: function() {
+            return this.multiSelect ? [] : null;
+          }
+        },
+
+        // multiSelect: {
+        //   type: Boolean,
+        //   value: false,
+        //   observer: '_toggleMultiSelect'
+        // }
       },
 
+      // _multiSelectChanged(nextVal, lastVal) {
+      //   if (nextVal === true && !Array.isArray(this.selected) && this.selected === null) {
+      //     this.selected = [];
+      //     this.selectedRoute = [];
+      //     this.selectedPath = [];
+      //     this.selectedParent = [];
+      //     this.selectedSiblings = [];
+      //     this.selectedChildren = [];
+      //   }
+      //   if (nextVal === true && !Array.isArray(this.selected) && this.selected !== null) {
+      //     this._selectAsset([this.selected], 'MUTLI_CHANGED');
+      //   }
+      //   if (nextVal === false && Array.isArray(this.selected) && this.selected === null) {
+      //     this.selected = null;
+      //     this.selectedRoute = [];
+      //     this.selectedPath = null;
+      //     this.selectedParent = null;
+      //     this.selectedSiblings = null;
+      //     this.selectedChildren = null;
+      //   }
+      //   if (nextVal === false && Array.isArray(this.selected) && this.selected !== null) {
+      //     this._selectAsset(this.selected[0], 'MUTLI_CHANGED');
+      //   }
+      // },
+
       created() {
+        this.multiSelect = true;
         this._lastSelection = {
           source: null,
           reason: null,
@@ -133,16 +178,19 @@
 
       /**
        * Selects an item. Call with an object that is a direct reference to one
-       * of the `items` objects. To clear the selected item, call with `null`.
+       * of the `items` objects.
        *
        * An optional source of the change can be provided as a string.
        */
       select(item, source='METHOD') {
-        if (item === null && this._lastSelection.item !== null) {
-          this._clearSelectedAsset(source);
-          return {source:source, cleared:true};
+        if (this.multiSelect && typeof item === 'object' && Array.isArray(item)) {
+          for (let i=0; i<item.length; i++) {
+            this.select(item[i], source);
+          }
+          return;
         }
-        if (!item || this._lastSelection.item === item) return;
+
+        if (!item || (this.multiSelect && this.selected.indexOf(item) > -1)) return;
 
         if (this._assetGraph.hasNode(item)) {
           return this._selectAsset(item, source);
@@ -202,34 +250,57 @@
       /**
        * Gets item metadata from the AssetGraph and updates internaly APIs
        */
-      _selectAsset(item, source) {
+      _selectAsset(item, route, source) {
         const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
-        this._lastSelection = {
-          item: item,
-          source: source,
-          route: route
-        };
-        if (this.selected !== item) {
-          this.set('selected', item);
+
+        if (this.multiSelect) {
+          if (this.selected.indexOf(item) > -1) {
+            this.push('selected', item);
+          }
+          let index = this.selected.indexOf(item);
+          this.push('selectedRoute', route);
+          this.push('selectedPath', path);
+          this.push('selectedParent', parent);
+          this.push('selectedChildren', children);
+          this.push('selectedSiblings', siblings);
+
+          let details = {
+            index,
+            source,
+            item,
+            route,
+            path,
+            parent,
+            children,
+            siblings
+          };
         }
-        this.set('selectedRoute', route);
-        this._setSelectedPath(path);
-        this._setSelectedParent(parent);
-        this._setSelectedChildren(children);
-        this._setSelectedSiblings(siblings);
 
-        let details = {
-          source,
-          item,
-          route,
-          path,
-          parent,
-          children,
-          siblings
-        };
+        if (!this.multiSelect && this.selected !== item) {
+          if (this.selected !== item) {
+            this.set('selected', item);
+          }
+          this.set('selectedRoute', route);
+          this._setSelectedPath(path);
+          this._setSelectedParent(parent);
+          this._setSelectedChildren(children);
+          this._setSelectedSiblings(siblings);
 
-        this.fire('px-app-asset-selected', details);
-        return details;
+          let details = {
+            source,
+            item,
+            route,
+            path,
+            parent,
+            children,
+            siblings
+          };
+        }
+
+        if (details) {
+          this.fire('px-app-asset-selected', details);
+          return details;
+        }
       },
       /**
        * Fired when a new item is selected. Includes details about how the item
@@ -254,25 +325,57 @@
        *   * {Object|null} detail.parent - Reference to the selected item's parent, or null if no parent defined
        *   * {Array} detail.children - Reference to the the selected item's children, or an empty array if no children defined
        *   * {Array} detail.siblings - Reference to the the selected item's siblings, or an array with only the selected item if no siblings defined
+       *   * {Array} detail.index - If multi-select is enabled, the index of the selected item in the selected array
        *
        * @event px-app-asset-selected
        */
 
-      _clearSelectedAsset(source) {
-        this._lastSelection = {
-          item: null,
-          source: null,
-          route: null
-        };
-        this.set('selected', null);
-        this.set('selectedRoute', null);
-        this._setSelectedPath(null);
-        this._setSelectedParent(null);
-        this._setSelectedChildren(null);
-        this._setSelectedSiblings(null);
+      _deselectAsset(item, route, source) {
+        if (!this.multiSelect && (!item || this.selected === item)) {
+          let details = {
+            source: source,
+            item: this.selected,
+            route: this.selectedRoute,
+            path: this.selectedPath,
+            parent: this.selectedParent,
+            children: this.selectedChildren,
+            siblings: this.selectedSiblings
+          };
 
-        this.fire('px-app-asset-selected-cleared');
-      }
+          this.set('selected', null);
+          this.set('selectedRoute', []);
+          this._setSelectedPath(null);
+          this._setSelectedParent(null);
+          this._setSelectedChildren(null);
+          this._setSelectedSiblings(null);
+        }
+
+        if (this.multiSelect && this.selected.indexOf(item) > -1) {
+          let index = this.selected.indexOf(item);
+          let details = {
+            index: index,
+            source: source,
+            item: this.selected[index],
+            route: this.selectedRoute[index],
+            path: this.selectedPath[index],
+            parent: this.selectedParent[index],
+            children: this.selectedChildren[index],
+            siblings: this.selectedSiblings[index]
+          };
+
+          this.splice('selected', index, 1);
+          this.splice('selectedRoute', index, 1);
+          this.splice('selectedPath', index, 1);
+          this.splice('selectedParent', index, 1);
+          this.splice('selectedChildren', index, 1);
+          this.splice('selectedSiblings', index, 1);
+        }
+
+        if (details) {
+          this.fire('px-app-asset-deselected', details);
+          return details;
+        }
+      },
       /**
        * Fired when the selected item is cleared and no new item is selected.
        *
@@ -287,6 +390,16 @@
        *
        * @event px-app-asset-selected-cleared
        */
+
+      _removeArrayItem(propName, prop, index, item) {
+        this.notifySplices(propName, [{
+          index: index,
+          removed: item,
+          removedCount: 1,
+          object: prop,
+          type: 'splice'
+        }]);
+      }
     };
   })();
 </script>
