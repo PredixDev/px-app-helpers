@@ -18,6 +18,7 @@
        // clean up and reset of states
        this.navContainer.navElement.style.willChange = "auto";
        delete this.navContainer;
+       delete this.headerContainer;
     }
   });
 })();
