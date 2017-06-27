@@ -45,6 +45,11 @@
           readOnly: true,
           value: null
         },
+        multiActive: {
+          type: Boolean,
+          value: false,
+          observer: '_multiActiveChanged'
+        }
       },
 
       created() {
@@ -56,7 +61,16 @@
       },
 
       listeners: {
-        'px-app-asset-should-be-activated' : '_assetActivatedByEvent'
+        'px-app-asset-should-be-activated' : '_assetActivatedByEvent',
+        'px-app-asset-should-be-deactivated' : '_assetDeactivatedByEvent'
+      },
+
+      _multiActiveChanged(isMultiActive) {
+        if(isMultiActive) {
+          this.set('active', []);
+          this.set('activeRoute', []);
+          this._setActivePath([]);
+        }
       },
 
       /**
@@ -92,6 +106,17 @@
       },
 
       /**
+       * Handles deactivation from events fired by children. The event `detail.item`
+       * should be a reference an item in the asset graph.
+       */
+      _assetDeactivatedByEvent(evt) {
+        evt.stopPropagation();
+        if (evt.detail.item) {
+          this._deactivateAsset(evt.detail.item, 'DOM_EVENT');
+        }
+      },
+
+      /**
        * Updates the active item when the `activeRoute` changes.
        */
       _assetActivatedByRoute(route) {
@@ -99,7 +124,7 @@
           this._clearActiveAsset('ROUTE_CHANGED');
           return;
         }
-        if (!route || this._lastActivation.route === route) return;
+        if (!route || this._lastActivation.route === route || (this.multiActive && Array.isArray(route) && route.length === 0)) return;
 
         const item = this._assetGraph.getNodeAtRoute(route);
         if (item) {
@@ -114,10 +139,10 @@
        */
       _assetActivatedByReference(item) {
         if (item === null && this._lastActivation.item !== null) {
-          this._clearActiveAssetdAsset('ITEM_CHANGED');
+          this._clearActiveAsset('ITEM_CHANGED');
           return;
         }
-        if (!item || this._lastActivation.item === item) return;
+        if (!item || this._lastActivation.item === item || (this.multiActive && Array.isArray(item) && item.length === 0)) return;
 
         if (this._assetGraph.hasNode(item)) {
           this._activateAsset(item, 'ITEM_CHANGED');
@@ -128,7 +153,7 @@
       },
 
       /**
-       * Gets item metadata from the AssetGraph and updates internaly APIs
+       * Gets item metadata from the AssetGraph and updates internal APIs
        */
       _activateAsset(item, source) {
         const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
@@ -137,14 +162,19 @@
           source: source,
           route: route
         }
-        if (this.active !== item) {
-          this.set('active', item);
+        if(this.multiActive) {
+          this.push('active', item);
+          this.push('activeRoute', route);
+          this.push('activePath', path);
         }
-        this.set('activeRoute', route);
-        this._setActivePath(path);
-        this._setActiveParent(parent);
-        this._setActiveChildren(children);
-        this._setActiveSiblings(siblings);
+        else if(this.active !== item) {
+          this.set('active', item);
+          this.set('activeRoute', route);
+          this._setActivePath(path);
+          this._setActiveParent(parent);
+          this._setActiveChildren(children);
+          this._setActiveSiblings(siblings);
+        }
 
         let details = {
           source,
@@ -184,6 +214,65 @@
        *   * {Array} detail.siblings - Reference to the the active item's siblings, or an array with only the active item if no siblings defined
        *
        * @event px-app-asset-activated
+       */
+      /**
+       * Gets item metadata from the AssetGraph and updates internal APIs
+       */
+      _deactivateAsset(item, source) {
+        const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+
+        if(this.multiActive) {
+          this.splice('active', this.active.indexOf(item), 1);
+          this.splice('activeRoute', this.activeRoute.indexOf(route), 1);
+          this.splice('activePath', this.activePath.indexOf(path), 1);
+        }
+        else {
+          this.set('active', null);
+          this.set('activeRoute', null);
+          this._setActivePath(null);
+          this._setActiveParent(null);
+          this._setActiveChildren(null);
+          this._setActiveSiblings(null);
+        }
+
+        let details = {
+          source,
+          item,
+          route,
+          path,
+          parent,
+          children,
+          siblings
+        };
+
+        this.fire('px-app-asset-deactivated', details);
+        return details;
+      },
+      /**
+       * Fired when a new item is deactivated. Includes details about how the item
+       * was deactivated.
+       *
+       * The `source` property is a string describing what triggered
+       * the activation:
+       *
+       *   * 'DOM_EVENT' - the user interacted with an item and activated it
+       *   * 'ROUTE_CHANGED' - the array bound to `activeRoute` changed
+       *   * 'ITEM_CHANGED' - the object bound to `active` changed
+       *   * 'METHOD' - the `activate()` method was called
+       *   * 'ROUTE_METHOD' - the `activateRoute()` method was called
+       *
+       * The event will have the following properties:
+       *
+       *   * {Object} detail - Contains the event details
+       *   * {String} detail.source - Info about the change trigger, see above
+       *   * {Object} detail.item - Reference to the active item
+       *   * {Array} detail.route - Route from the top of the graph to the active item
+       *   * {Array} detail.path - Path from the top of the graph to the active item
+       *   * {Object|null} detail.parent - Reference to the active item's parent, or null if no parent defined
+       *   * {Array} detail.children - Reference to the the active item's children, or an empty array if no children defined
+       *   * {Array} detail.siblings - Reference to the the active item's siblings, or an array with only the active item if no siblings defined
+       *
+       * @event px-app-asset-deactivated
        */
 
        _clearActiveAsset(source) {
