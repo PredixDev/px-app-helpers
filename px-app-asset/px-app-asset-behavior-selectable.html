@@ -289,7 +289,7 @@
        */
 
        /**
-       * Gets item metadata from the AssetGraph and updates internaly APIs
+       * Gets item metadata from the AssetGraph and updates internal APIs
        */
       _deselectAsset(item, source) {
         const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
@@ -355,12 +355,19 @@
           source: null,
           route: null
         };
-        this.set('selected', null);
-        this.set('selectedRoute', null);
-        this._setSelectedPath(null);
-        this._setSelectedParent(null);
-        this._setSelectedChildren(null);
-        this._setSelectedSiblings(null);
+        if(this.multiSelect) {
+          this.set('selected', []);
+          this.set('selectedRoute', []);
+          this._setSelectedPath([]);
+        }
+        else {
+          this.set('selected', null);
+          this.set('selectedRoute', null);
+          this._setSelectedPath(null);
+          this._setSelectedParent(null);
+          this._setSelectedChildren(null);
+          this._setSelectedSiblings(null);
+        }
 
         this.fire('px-app-asset-selected-cleared');
       }
