@@ -7,10 +7,11 @@
       this.navContainer.navElement.style.willChange = 'transform';
       this.headerContainer = { headerElement: Polymer.dom(this).querySelector('[header-container]') };
       this.headerContainer.headerHeight = parseInt(getComputedStyle(this.headerContainer.headerElement).height, 10);
+      this.condensedHeaderSize = (this.headerContainer.headerHeight >= 5 ? 5 : 0);
     },
 
     run: function(progress) {
-      let dy = ((this.navContainer.navHeight - this.headerContainer.headerHeight + 5) * progress);
+      let dy = ((this.navContainer.navHeight - this.headerContainer.headerHeight + this.condensedHeaderSize) * progress);
       this.transform(`translateY(${dy}px)`, this.navContainer.navElement);
     },
 
