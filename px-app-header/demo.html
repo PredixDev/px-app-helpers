@@ -21,12 +21,6 @@
     <link defer rel="import" href="../../px-colors-design/colors-shared-styles.html">
     <link defer rel="import" href="../../px-card/px-card.html">
     <link defer rel="import" href="../../px-app-nav/px-app-nav.html">
-    <style>
-      body{
-        overflow-y: hidden;
-        margin: 0px 0px 0px 0px;
-      }
-    </style>
   </head>
   <body>
     <style is="custom-style" include="px-theme-styles">
@@ -39,7 +33,6 @@
       <px-app-header>
         <px-app-nav slot="app-nav" items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:analysis","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
         </px-app-nav>
-
         <div>
           <px-card header-text="moo" icon="px:settings">
             <p>
