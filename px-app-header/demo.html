@@ -23,9 +23,10 @@
     <link defer rel="import" href="../../px-app-nav/px-app-nav.html">
   </head>
   <body>
-    <style is="custom-style" include="px-theme-styles">
-    </style>
-    <style is="custom-style" include="colors-shared-styles">
+    <style is="custom-style" include="px-theme-styles colors-shared-styles">
+      body{
+        margin: 80px 0px 0px 0px;
+      }
       :root{
         --px-app-nav-background-color: var(--px-gray2);
       }
@@ -33,6 +34,7 @@
       <px-app-header>
         <px-app-nav slot="app-nav" items='[{"path":"tab1","icon":"px:alert","eventName":"firstItem","label":"Alerts","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2","eventName":"subitemTwo"},{"label":"Sub Category 3","path":"subitem3"}]},{"path":"tab2","icon":"px:asset","label":"Cases","subitems":[{"label":"Sub Category 1"},{"label":"Sub Category 2"},{"label":"Sub Category 3"}]},{"path":"tab3","icon":"px:analysis","label":"Analysis"},{"path":"tab4","icon":"px:dashboard","label":"Dashboards"}]'>
         </px-app-nav>
+      </px-app-header>
         <div>
           <px-card header-text="moo" icon="px:settings">
             <p>
@@ -69,6 +71,5 @@
             </p>
           </px-card>
         </div>
-      </px-app-header>
   </body>
 </html>

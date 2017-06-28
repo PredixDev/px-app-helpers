@@ -30,7 +30,7 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
 <dom-module id="px-app-header">
   <template>
     <style include="px-app-header-styles"></style>
-    <app-header-layout fullbleed has-scrolling-region>
+    <app-header-layout fullbleed>
       <app-header slot="header" fixed condenses effects="px-app-header-scroll-effect">
         <div header-container sticky>
           <slot name="branding-bar">
@@ -41,7 +41,6 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
           <slot name="app-nav"></slot>
         </div>
       </app-header>
-
       <slot></slot>
     </app-header-layout>
   </template>
