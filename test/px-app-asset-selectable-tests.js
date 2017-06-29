@@ -139,54 +139,6 @@ function runCustomTests() {
         expect(fx.selectedMeta.siblings).to.be.eql(data[0].children[0].children);
       });
 
-      // it('updates the `selectedPath` when an item is selected', function() {
-      //   var item = data[0].children[0].children[1];
-      //   fx.select(item);
-      //   expect(fx.selectedPath[0]).to.equal(data[0]);
-      //   expect(fx.selectedPath[1]).to.equal(data[0].children[0]);
-      //   expect(fx.selectedPath[2]).to.equal(data[0].children[0].children[1]);
-      // });
-      //
-      // it('updates the `selectedParent` when an item is selected', function() {
-      //   var item = data[0].children[0];
-      //   var parent = data[0];
-      //   fx.select(item);
-      //   expect(fx.selectedParent).to.equal(parent);
-      // });
-      //
-      // it('sets the `selectedParent` to null when the selected item has no parent', function() {
-      //   var item = data[0];
-      //   fx.select(item);
-      //   expect(fx.selectedParent).to.be.null;
-      // });
-      //
-      // it('updates the `selectedSiblings` when an item is selected', function() {
-      //   var item = data[0].children[0];
-      //   var siblings = data[0].children;
-      //   fx.select(item);
-      //   expect(fx.selectedSiblings).to.equal(siblings);
-      // });
-      //
-      // it('sets the `selectedSiblings` to an array containing only the selected item when it has no siblings', function() {
-      //   var item = data[0];
-      //   fx.select(item);
-      //   expect(fx.selectedSiblings.length).to.equal(1);
-      //   expect(fx.selectedSiblings[0]).to.equal(data[0]);
-      // });
-      //
-      // it('updates the `selectedChildren` when an item is selected', function() {
-      //   var item = data[0].children[0];
-      //   var children = data[0].children[0].children;
-      //   fx.select(item);
-      //   expect(fx.selectedChildren).to.equal(children);
-      // });
-      //
-      // it('sets the `selectedChildren` to an empty array when the selected item has no children', function() {
-      //   var item = data[0].children[1];
-      //   fx.select(item);
-      //   expect(fx.selectedChildren).to.eql([]);
-      // });
-
       it('selects an item by event', function() {
         var item = data[0].children[1];
         fx.fire('px-app-asset-should-be-selected', {item:item});
@@ -357,6 +309,18 @@ function runCustomTests() {
         expect(fx.selected[0]).to.equal(item2);
       });
 
+      it('updates the `selectedRoute` when a new selected item is spliced in', function() {
+        var item1 = data[0].children[0];
+        var item2 = data[0].children[1];
+        var item3 = data[0].children[0].children[0];
+        fx.select(item1);
+        fx.select(item2);
+        fx.splice('selected', 1, 1, item3);
+        expect(fx.selectedRoute.length).to.equal(2);
+        expect(fx.selectedRoute[0]).to.eql(['united-states','calif']);
+        expect(fx.selectedRoute[1]).to.eql(['united-states','calif','sf']);
+      });
+
       it('updates the `selectedMeta` when an item is selected', function() {
         var item1 = data[0].children[0];
         var item2 = data[0].children[1];
@@ -379,45 +343,6 @@ function runCustomTests() {
         expect(fx.selectedMeta[0].siblings).to.equal(data[0].children);
         expect(fx.selectedMeta[1].siblings).to.equal(data[0].children);
       });
-
-      // it('updates the selectedPath when multiple items are selected', function() {
-      //   expect(fx.selectedPath.length).to.equal(2);
-      //   expect(fx.selectedPath[0]).to.eql([data[0], data[0].children[0]]);
-      //   expect(fx.selectedPath[1]).to.eql([data[0], data[0].children[1]]);
-      // });
-      //
-      // it('updates the selectedParent when multiple items are selected', function() {
-      //   var item1 = data[0].children[0];
-      //   var item2 = data[0].children[1];
-      //   fx.select(item1);
-      //   fx.select(item2);
-      //   expect(Array.isArray(fx.selectedParent)).to.equal(true);
-      //   expect(fx.selectedParent.length).to.equal(2);
-      //   expect(fx.selectedParent[0]).to.equal(data[0]);
-      //   expect(fx.selectedParent[1]).to.equal(data[0]);
-      // });
-      //
-      // it('updates the selectedSiblings when multiple items are selected', function() {
-      //   var item1 = data[0].children[0];
-      //   var item2 = data[0].children[1];
-      //   fx.select(item1);
-      //   fx.select(item2);
-      //   expect(Array.isArray(fx.selectedSiblings)).to.equal(true);
-      //   expect(fx.selectedSiblings.length).to.equal(2);
-      //   expect(fx.selectedSiblings[0]).to.equal(data[0].children);
-      //   expect(fx.selectedSiblings[1]).to.equal(data[0].children);
-      // });
-      //
-      // it('updates the selectedChildren when multiple items are selected', function() {
-      //   var item1 = data[0].children[0];
-      //   var item2 = data[0].children[1];
-      //   fx.select(item1);
-      //   fx.select(item2);
-      //   expect(Array.isArray(fx.selectedChildren)).to.equal(true);
-      //   expect(fx.selectedChildren.length).to.equal(2);
-      //   expect(fx.selectedChildren[0]).to.equal(data[0].children[0].children);
-      //   expect(fx.selectedChildren[1]).to.be.null;
-      // });
     });
   });
 

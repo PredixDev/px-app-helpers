@@ -23,8 +23,7 @@
         selected: {
           type: Object,
           notify: true,
-          value: null,
-          observer: '_assetSelectedByReference'
+          value: null
         },
 
         /**
@@ -116,6 +115,8 @@
         };
       },
 
+      observers: ['_selectedChanged(selected.*)'],
+
       listeners: {
         'px-app-asset-should-be-selected' : '_assetSelectedByEvent',
         'px-app-asset-should-be-deselected' : '_assetDeselectedByEvent'
@@ -162,7 +163,7 @@
         if ((!this.multiSelect && item === null && this._lastSelection.item !== null) ||
             (this.multiSelect && item === null && this.selected.length) ||
             (this.multiSelect && Array.isArray(item) && !item.length && this.selected.length)) {
-          this._clearSelectedAsset(source);
+          this.deselect(Array.isArray(this.selected) ? [...this.selected] : this.selected);
           return this.selected;
         }
         if (!item || (!this.multiSelect && item === this._lastSelection.item) || (this.multiSelect && this.selected.indexOf(item) > -1)) return this.selected;
@@ -207,7 +208,7 @@
       _assetSelectedByEvent(evt) {
         evt.stopPropagation();
         if (evt.detail.item) {
-          this._selectAsset(evt.detail.item, 'DOM_EVENT');
+          this.select(evt.detail.item, 'DOM_EVENT');
         }
       },
 
@@ -218,7 +219,7 @@
       _assetDeselectedByEvent(evt) {
         evt.stopPropagation();
         if (evt.detail.item) {
-          this._deselectAsset(evt.detail.item, 'DOM_EVENT');
+          this.deselect(evt.detail.item, 'DOM_EVENT');
         }
       },
 
@@ -226,36 +227,75 @@
        * Updates the selected item when the `selectedRoute` changes.
        */
       _assetSelectedByRoute(route) {
-        if ((route === null && this._lastSelection.route !== null) || (Array.isArray(route) && !route.length && Array.isArray(this._lastSelection.route) && this._lastSelection.route.length > 0)) {
-          this._clearSelectedAsset('ROUTE_CHANGED');
-          return;
-        }
-        if (!route || this._lastSelection.route === route || (this.multiSelect && Array.isArray(route) && route.length === 0)) return;
-
-        const item = this._assetGraph.getNodeAtRoute(route);
-        if (item) {
-          this._selectAsset(item, 'ROUTE_CHANGED');
-        } else {
-          throw new Error(`The route ${JSON.stringify(route)} could not be found in the items graph.`)
-        }
+        // if ((route === null && this._lastSelection.route !== null) || (Array.isArray(route) && !route.length && Array.isArray(this._lastSelection.route) && this._lastSelection.route.length > 0)) {
+        //   // this._clearSelectedAsset('ROUTE_CHANGED');
+        //   return;
+        // }
+        // if (!route || this._lastSelection.route === route || (this.multiSelect && Array.isArray(route) && route.length === 0)) return;
+        //
+        // const item = this._assetGraph.getNodeAtRoute(route);
+        // if (item) {
+        //   this._selectAsset(item, 'ROUTE_CHANGED');
+        // } else {
+        //   throw new Error(`The route ${JSON.stringify(route)} could not be found in the items graph.`)
+        // }
       },
 
       /**
        * Updates other selected item properties when `selected` changes.
        */
-      _assetSelectedByReference(item) {
-        if (item === null && this._lastSelection.item !== null) {
-          this._clearSelectedAsset('ITEM_CHANGED');
-          return;
-        }
-        if (!item || this._lastSelection.item === item || (this.multiSelect && Array.isArray(item) && item.length === 0)) return;
+      _selsectedChanged(ref) {
+        if (!ref || !ref.path) return;
 
-        if (this._assetGraph.hasNode(item)) {
-          this._selectAsset(item, 'ITEM_CHANGED');
-        } else {
-          throw new Error(`The following item could not be found in the items graph:
-          ${JSON.stringify(item)}`)
+        if (!this.multiSelect && ref.path === 'selected') {
+          this._updateSelectedRoute(ref.base);
         }
+
+        if (this.multiSelect && (ref.path === 'selected' || ref.path === 'selected.splices')) {
+          this._updateSelectedRouteMulti(ref.base);
+        }
+      },
+
+      _updateSelectedRoute(selected) {
+        if (selected) {
+          if (!this._assetGraph.hasNode(selected)) {
+            throw new Error(`The following item could not be found in the items graph:
+              ${JSON.stringify(selected)}`);
+            return;
+          }
+
+          const route = this._assetGraph.getRouteTo(selected);
+          if (this._routeIsDifferent(route, this.selectedRoute)) {
+            this.selectedRoute = route;
+          }
+        }
+        else {
+          this.selectedRoute = null;
+        }
+      },
+
+      _updateSelectedRouteMulti(selected) {
+        if (selected && Array.isArray(selected) && selected.length) {
+          this.selectedRoute = selected.map(item => {
+            if (!this._assetGraph.hasNode(item)) {
+              throw new Error(`The following item could not be found in the items graph:
+                ${JSON.stringify(item)}`);
+            }
+
+            return this._assetGraph.getRouteTo(item);
+          });
+        } else {
+          this.selectedRoute = [];
+        }
+      },
+
+      _routeIsDifferent(r1, r2) {
+        if (!r1 || !r2) return true;
+        if (r1.length !== r2.length) return true;
+        for (let i=0; i<r1.length; i++) {
+          if (r1[i] !== r2[i]) return true;
+        }
+        return false;
       },
 
       /**
@@ -270,11 +310,11 @@
         };
         if(this.multiSelect) {
           this.push('selected', item);
-          this.push('selectedRoute', route);
+          // this.push('selectedRoute', route);
         }
         else if (this.selected !== item) {
           this.set('selected', item);
-          this.set('selectedRoute', route);
+          // this.set('selectedRoute', route);
         }
 
         let details = {
@@ -332,7 +372,7 @@
             siblings: this.selectedSiblings
           }
           this.set('selected', null);
-          this.set('selectedRoute', null);
+          // this.set('selectedRoute', null);
           this.fire('px-app-asset-deselected', details);
         }
         if(this.multiSelect) {
@@ -347,7 +387,7 @@
             siblings
           }
           this.splice('selected', this.selected.indexOf(item), 1);
-          this.splice('selectedRoute', this.selectedRoute.indexOf(route), 1);
+          // this.splice('selectedRoute', this.selectedRoute.indexOf(route), 1);
           this.fire('px-app-asset-deselected', details);
         }
       },
@@ -377,37 +417,6 @@
        *   * {Array} detail.siblings - Reference to the the selected item's siblings, or an array with only the selected item if no siblings defined
        *
        * @event px-app-asset-deselected
-       */
-
-      _clearSelectedAsset(source) {
-        this._lastSelection = {
-          item: null,
-          source: null,
-          route: null
-        };
-        if(this.multiSelect) {
-          this.set('selected', []);
-          this.set('selectedRoute', []);
-        }
-        else {
-          this.set('selected', null);
-          this.set('selectedRoute', null);
-        }
-        this.fire('px-app-asset-selected-cleared');
-      }
-      /**
-       * Fired when the selected item is cleared and no new item is selected.
-       *
-       * The `source` property is a string describing what triggered
-       * the clearing:
-       *
-       *   * 'DOM_EVENT' - user interaction cleared the selection
-       *   * 'ROUTE_CHANGED' - the array bound to `selectedRoute` changed
-       *   * 'ITEM_CHANGED' - the object bound to `selected` changed
-       *   * 'METHOD' - the `select()` method was called with `null`
-       *   * 'ROUTE_METHOD' - the `selectRoute()` method was called with `null` or an empty array
-       *
-       * @event px-app-asset-selected-cleared
        */
     };
   })();
