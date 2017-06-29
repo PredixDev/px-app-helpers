@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web Component Test : Fixture for px-app-asset-behavior-selectable</title>
+
+    <!-- Requires Webcomponents.js polyfill is provided by the page for browsers that don't support html imports -->
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+    <!-- web-component-tester automatically provides local copy of brower.js below
+         for any URL ending with "/web-component-tester/browser.js"
+         when wct is run from the command line -->
+    <script src="../web-component-tester/browser.js"></script>
+    <!-- Load Polymer -->
+    <link rel="import" href="../bower_components/polymer/polymer.html"/>
+    <!-- Load local components -->
+    <link rel="import" href="../px-app-asset/px-app-asset-behavior-graph.html"/>
+    <link rel="import" href="../px-app-asset/px-app-asset-behavior-selectable.html"/>
+    <!-- This script link will contain the generated script stub for custom, developer-added test cases -->
+    <script src="px-app-asset-selectable-tests.js"></script>
+
+    <script src="../../test-fixture/test-fixture-mocha.js"></script>
+    <link href="../../test-fixture/test-fixture.html" rel="import">
+  </head>
+
+  <body>
+    <style include="px-theme-styles" is="custom-style"></style>
+
+    <test-fixture id="AssetSelectableFixture">
+      <template>
+        <px-app-asset-selectable-stub></px-app-asset-selectable-stub>
+      </template>
+    </test-fixture>
+  </body>
+</html>
