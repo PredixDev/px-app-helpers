@@ -69,54 +69,38 @@
         },
 
         /**
-         * [Read-only] The path to the selected item as an array. Begins with
+         * [Read-only] Helpful metadata about the selected item.
+         *
+         * SINGLE-SELECT MODE: An object with the following information about
+         * the selected item (if no selected item, all values will be null):
+         *
+         * - {Object} `item`: Reference to the selected item
+         * - {Array} `path`: The path to the selected item as an array. Begins with
          * the top-most item in the graph and ends with the selected item. It
          * the selected item is at the top of the graph, the array will include
          * only the selected item.
+         * - {Array} `route`: Route to the selected item (see `selectedRoute`
+         * for more information on how this is created)
+         * - {Object} `parent`: Reference to the selected item's parent,
+         * or `null` if it has no parent
+         * - {Array} `children`: Reference to the selected item's children,
+         * or empty array if it has no children
+         * - {Array} `siblings`: Reference to the selected item's siblings (e.g.
+         * the children of its parent) or an array with only the selected item
+         * if it has no children.
          *
-         * If no item is selected, set to null.
+         * MUTLI-SELECT MODE: An array of objects with metadata about each
+         * selected item. Each object will be contain the same values as above.
+         * If no items are selected, all values will be null.
          */
-        selectedPath: {
-          type: Array,
-          notify: true,
-          readOnly: true,
-          value: null
-        },
-
-        /**
-         * [Read-only] A reference to the currently selected item's parent. `null`
-         * if the selected item has no parent or no item is selected.
-         */
-        selectedParent: {
+        selectedMeta: {
           type: Object,
           notify: true,
           readOnly: true,
-          value: null
+          value: null,
+          computed: '_computeSelectedMeta(selected.*)'
         },
 
-        /**
-         * [Read-only] A reference to the currenty selected item's siblings - the
-         * children of its parent. Array with only the selected item if the selected
-         * item has no siblings. `null` if no item is selected.
-         */
-        selectedSiblings: {
-          type: Array,
-          notify: true,
-          readOnly: true,
-          value: null
-        },
-
-        /**
-         * [Read-only] A reference to the currently selected item's children.
-         * Empty array (`[]`) if the selected item has no children. `null` if no
-         * item is selected.
-         */
-        selectedChildren: {
-          type: Array,
-          notify: true,
-          readOnly: true,
-          value: null
-        },
         multiSelect: {
           type: Boolean,
           value: false,
@@ -137,11 +121,34 @@
         'px-app-asset-should-be-deselected' : '_assetDeselectedByEvent'
       },
 
+      _computeSelectedMeta(selected) {
+        if (!this.multiSelect) {
+          if (selected.base && this._assetGraph && this._assetGraph.hasNode(selected.base)) {
+            const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(selected.base);
+            return {
+              item: selected.base, path, route, parent, children, siblings
+            };
+          }
+        }
+        if (this.multiSelect) {
+          if (selected.base && Array.isArray(selected.base) && selected.base.length) {
+            return selected.base.map(item => {
+              const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+              return {
+                item, path, route, parent, children, siblings
+              };
+            });
+          }
+        }
+        return {
+          item: null, path: null, route: null, parent: null, children: null, siblings: null
+        };
+      },
+
       _multiSelectChanged(isMultiSelect) {
         if(isMultiSelect) {
           this.set('selected', []);
           this.set('selectedRoute', []);
-          this._setSelectedPath([]);
         }
       },
 
@@ -152,17 +159,44 @@
        * An optional source of the change can be provided as a string.
        */
       select(item, source='METHOD') {
-        if (item === null && this._lastSelection.item !== null) {
+        if ((!this.multiSelect && item === null && this._lastSelection.item !== null) ||
+            (this.multiSelect && item === null && this.selected.length) ||
+            (this.multiSelect && Array.isArray(item) && !item.length && this.selected.length)) {
           this._clearSelectedAsset(source);
-          return {source:source, cleared:true};
+          return this.selected;
         }
-        if (!item || this._lastSelection.item === item) return;
+        if (!item || (!this.multiSelect && item === this._lastSelection.item) || (this.multiSelect && this.selected.indexOf(item) > -1)) return this.selected;
+        if (this.multiSelect && Array.isArray(item) && item.length) {
+          for (let i=0; i<item.length; i++) {
+            this.select(item[i], source);
+          }
+          return this.selected;
+        }
 
         if (this._assetGraph.hasNode(item)) {
           return this._selectAsset(item, source);
         } else {
           throw new Error(`The following item could not be found in the items graph:
           ${JSON.stringify(item)}`);
+        }
+      },
+
+      deselect(item, source='METHOD') {
+        if (!this.multiSelect && (!item || this.selected === item)) {
+          this._deselectAsset(this.selected);
+          return this.selected;
+        }
+        if (this.multiSelect && !item) {
+          this.deselect([...this.selected]);
+          return this.selected;
+        }
+        if (this.multiSelect && Array.isArray(item) && this.selected.length) {
+          for (let i=0; i<item.length; i++) {
+            this.deselect(item[i], source);
+          }
+        }
+        if (this.multiSelect && item && this.selected.indexOf(item) > -1) {
+          this._deselectAsset(item);
         }
       },
 
@@ -237,15 +271,10 @@
         if(this.multiSelect) {
           this.push('selected', item);
           this.push('selectedRoute', route);
-          this.push('selectedPath', path);
         }
         else if (this.selected !== item) {
           this.set('selected', item);
           this.set('selectedRoute', route);
-          this._setSelectedPath(path);
-          this._setSelectedParent(parent);
-          this._setSelectedChildren(children);
-          this._setSelectedSiblings(siblings);
         }
 
         let details = {
@@ -292,34 +321,35 @@
        * Gets item metadata from the AssetGraph and updates internal APIs
        */
       _deselectAsset(item, source) {
-        const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
-
-        if(this.multiSelect) {
-          this.splice('selected', this.selected.indexOf(item), 1);
-          this.splice('selectedRoute', this.selectedRoute.indexOf(route), 1);
-          this.splice('selectedPath', this.selectedPath.indexOf(path), 1);
-        }
-        else {
+        if (!this.multiSelect) {
+          const details = {
+            source,
+            item: this.selectedItem,
+            route: this.selectedRoute,
+            path: this.selectedPath,
+            parent: this.selectedParent,
+            children: this.selectedChildren,
+            siblings: this.selectedSiblings
+          }
           this.set('selected', null);
           this.set('selectedRoute', null);
-          this._setSelectedPath(null);
-          this._setSelectedParent(null);
-          this._setSelectedChildren(null);
-          this._setSelectedSiblings(null);
+          this.fire('px-app-asset-deselected', details);
         }
-
-        let details = {
-          source,
-          item,
-          route,
-          path,
-          parent,
-          children,
-          siblings
-        };
-
-        this.fire('px-app-asset-selected', details);
-        return details;
+        if(this.multiSelect) {
+          const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+          const details = {
+            source,
+            item,
+            route,
+            path,
+            parent,
+            children,
+            siblings
+          }
+          this.splice('selected', this.selected.indexOf(item), 1);
+          this.splice('selectedRoute', this.selectedRoute.indexOf(route), 1);
+          this.fire('px-app-asset-deselected', details);
+        }
       },
 
       /**
@@ -358,17 +388,11 @@
         if(this.multiSelect) {
           this.set('selected', []);
           this.set('selectedRoute', []);
-          this._setSelectedPath([]);
         }
         else {
           this.set('selected', null);
           this.set('selectedRoute', null);
-          this._setSelectedPath(null);
-          this._setSelectedParent(null);
-          this._setSelectedChildren(null);
-          this._setSelectedSiblings(null);
         }
-
         this.fire('px-app-asset-selected-cleared');
       }
       /**
