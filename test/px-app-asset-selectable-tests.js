@@ -157,6 +157,22 @@ function runCustomTests() {
         fx.selectedRoute = ['united-states', 'calif', 'sf'];
         expect(fx.selected).to.equal(item);
       });
+
+      it('deselects the selected item an item when `selectedRoute` changes to null', function() {
+        var item = data[0].children[0].children[0];
+        fx.select(item);
+        expect(fx.selected).to.equal(item);
+        fx.selectedRoute = null;
+        expect(fx.selected).to.equal(null);
+      });
+
+      it('deselects the selected item an item when `selectedRoute` changes to an empty array', function() {
+        var item = data[0].children[0].children[0];
+        fx.select(item);
+        expect(fx.selected).to.equal(item);
+        fx.selectedRoute = [];
+        expect(fx.selected).to.equal(null);
+      });
     });
 
     describe('multi select', function() {
@@ -307,6 +323,37 @@ function runCustomTests() {
         fx.splice('selectedRoute', 0, 1);
         expect(fx.selected.length).to.equal(1);
         expect(fx.selected[0]).to.equal(item2);
+      });
+
+      it('adds a selected item when its route is spliced in to the `selectedRoute` array', function() {
+        var item1 = data[0].children[0];
+        var item2 = data[0].children[1];
+        var item3 = data[0].children[2];
+        fx.select(item1);
+        fx.select(item2);
+        fx.splice('selectedRoute', 1, 0, ['united-states', 'oregon']);
+        expect(fx.selected.length).to.equal(3);
+        expect(fx.selected[0]).to.equal(item1);
+        expect(fx.selected[1]).to.equal(item3);
+        expect(fx.selected[2]).to.equal(item2);
+      });
+
+      it('clears all selected items when `selectedRoute` is changed to null', function() {
+        var item1 = data[0].children[0];
+        var item2 = data[0].children[1];
+        fx.select(item1);
+        fx.select(item2);
+        fx.selectedRoute = null;
+        expect(fx.selected.length).to.equal(0);
+      });
+
+      it('clears all selected items when `selectedRoute` is changed to an empty array', function() {
+        var item1 = data[0].children[0];
+        var item2 = data[0].children[1];
+        fx.select(item1);
+        fx.select(item2);
+        fx.selectedRoute = [];
+        expect(fx.selected.length).to.equal(0);
       });
 
       it('updates the `selectedRoute` when a new selected item is spliced in', function() {

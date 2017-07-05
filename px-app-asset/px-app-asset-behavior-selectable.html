@@ -6,7 +6,41 @@
     window.PxAppBehavior = (window.PxAppBehavior || {});
 
     /**
+     * Adds component-level behaviors to deal with selecting and deselecting
+     * assets in an AssetGraph.
      *
+     * Single-select mode is enabled by default. To enable multi-select mode
+     * permanently, add the following static property to your component:
+     *
+     * ```
+     * Polymer({
+     *   is: 'x-component-name',
+     *   behaviors: [PxAppBehavior.AssetSelectable],
+     *   multiSelect: true,
+     *   properties: {},
+     *   ...
+     * });
+     * ```
+     *
+     * To allow the developer using your component to enable or disable multi-select
+     * mode dynamically via an attribute, add the following property to your component
+     * (ensure the property is named `multiSelect`, is a Boolean, and has the observer
+     * `_toggleMultiSelect`):
+     *
+     * ```
+     * Polymer({
+     *   is: 'x-component-name',
+     *   behaviors: [PxAppBehavior.AssetSelectable],
+     *   properties: {
+     *     multiSelect: {
+     *       type: Boolean,
+     *       value: false,
+     *       observer: '_toggleMultiSelect'
+     *     }
+     *   },
+     *   ...
+     * });
+     * ```
      *
      * @polymerBehavior PxAppBehavior.AssetSelectable
      */
@@ -23,7 +57,9 @@
         selected: {
           type: Object,
           notify: true,
-          value: null
+          value: function() {
+            return this.multiSelect ? [] : null
+          }
         },
 
         /**
@@ -64,7 +100,9 @@
         selectedRoute: {
           type: Array,
           notify: true,
-          observer: '_assetSelectedByRoute'
+          value: function() {
+            return this.multiSelect ? [] : null;
+          }
         },
 
         /**
@@ -97,13 +135,7 @@
           notify: true,
           readOnly: true,
           value: null,
-          computed: '_computeSelectedMeta(selected.*)'
-        },
-
-        multiSelect: {
-          type: Boolean,
-          value: false,
-          observer: '_multiSelectChanged'
+          computed: '_getSelectedMeta(selected.*)'
         }
       },
 
@@ -115,49 +147,51 @@
         };
       },
 
-      observers: ['_selectedChanged(selected.*)'],
+      observers: [
+        '_selectedChanged(selected.*)',
+        '_selectedRouteChanged(selectedRoute.*)'
+      ],
 
       listeners: {
         'px-app-asset-should-be-selected' : '_assetSelectedByEvent',
         'px-app-asset-should-be-deselected' : '_assetDeselectedByEvent'
       },
 
-      _computeSelectedMeta(selected) {
-        if (!this.multiSelect) {
-          if (selected.base && this._assetGraph && this._assetGraph.hasNode(selected.base)) {
-            const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(selected.base);
-            return {
-              item: selected.base, path, route, parent, children, siblings
-            };
-          }
-        }
-        if (this.multiSelect) {
-          if (selected.base && Array.isArray(selected.base) && selected.base.length) {
-            return selected.base.map(item => {
-              const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
-              return {
-                item, path, route, parent, children, siblings
-              };
-            });
-          }
-        }
-        return {
-          item: null, path: null, route: null, parent: null, children: null, siblings: null
-        };
+      _multiSelect: false,
+
+      get multiSelect() {
+        return this._multiSelect;
       },
 
-      _multiSelectChanged(isMultiSelect) {
-        if(isMultiSelect) {
-          this.set('selected', []);
-          this.set('selectedRoute', []);
+      set multiSelect(val) {
+        if (val !== this._multiSelect) {
+          this._multiSelect = val;
+          this._toggleMultiSelect(val);
+        }
+      },
+
+      _toggleMultiSelect(allowMultiSelect) {
+        if (allowMultiSelect && !Array.isArray(this.selected)) {
+          this.selected = [];
+          this.selectedRoute = [];
+        }
+        if (!allowMultiSelect && Array.isArray(this.selected)) {
+          this.selected = this.selected.length ? [this.selected[0]] : [];
         }
       },
 
       /**
        * Selects an item. Call with an object that is a direct reference to one
-       * of the `items` objects. To clear the selected item, call with `null`.
+       * of the `items` objects.
+       *
+       * If multi-select mode is enabled, call with an object to select a single
+       * item or an array of objects to select multiple items.
        *
        * An optional source of the change can be provided as a string.
+       *
+       * @param  {Object|Array} item
+       * @param  {String} source
+       * @return {Object|Array} - The next `selected` item or items
        */
       select(item, source='METHOD') {
         if ((!this.multiSelect && item === null && this._lastSelection.item !== null) ||
@@ -175,13 +209,26 @@
         }
 
         if (this._assetGraph.hasNode(item)) {
-          return this._selectAsset(item, source);
+          this._selectAsset(item, source);
+          return this.selected;
         } else {
           throw new Error(`The following item could not be found in the items graph:
           ${JSON.stringify(item)}`);
         }
       },
 
+      /**
+       * Deselects an item. Call with an object that. Call with a direct reference
+       * to the selected item or with `null` to deselect whatever is selected.
+       *
+       * If multi-select mode is enabled, call with a direct reference to one of
+       * the selected items to deselect it, or an array of selected items to
+       * deselect multiple, or `null` to deselect all items.
+       *
+       * @param  {Object|Array|null} item
+       * @param  {String} source
+       * @return {Object|Array|null} - The remaining `selected` items or null
+       */
       deselect(item, source='METHOD') {
         if (!this.multiSelect && (!item || this.selected === item)) {
           this._deselectAsset(this.selected);
@@ -195,15 +242,36 @@
           for (let i=0; i<item.length; i++) {
             this.deselect(item[i], source);
           }
+          return this.selected;
         }
         if (this.multiSelect && item && this.selected.indexOf(item) > -1) {
           this._deselectAsset(item);
+          return this.selected;
         }
       },
 
+      _getSelectedMeta(selected) {
+        if (selected.base && !Array.isArray(selected.base) && this._assetGraph && this._assetGraph.hasNode(selected.base)) {
+          const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(selected.base);
+          return {
+            item: selected.base, path, route, parent, children, siblings
+          };
+        }
+        if (selected.base && Array.isArray(selected.base) && selected.base.length) {
+          return selected.base.map(item => {
+            const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+            return {
+              item, path, route, parent, children, siblings
+            };
+          });
+        }
+        return {
+          item: null, path: null, route: null, parent: null, children: null, siblings: null
+        };
+      },
+
       /**
-       * Handles selection from events fired by children. The event `detail.item`
-       * should be a reference an item in the asset graph.
+       * The event `detail.item` should be a reference an item in the asset graph.
        */
       _assetSelectedByEvent(evt) {
         evt.stopPropagation();
@@ -213,8 +281,7 @@
       },
 
       /**
-       * Handles deselection from events fired by children. The event `detail.item`
-       * should be a reference an item in the asset graph.
+       * The event `detail.item` should be a reference an item in the asset graph.
        */
       _assetDeselectedByEvent(evt) {
         evt.stopPropagation();
@@ -224,28 +291,63 @@
       },
 
       /**
-       * Updates the selected item when the `selectedRoute` changes.
+       * Should only sync changes to `selectedRoute` when necessary to avoid
+       * infinite loop of `selected` observer triggering `selectedRoute` observer.
        */
-      _assetSelectedByRoute(route) {
-        // if ((route === null && this._lastSelection.route !== null) || (Array.isArray(route) && !route.length && Array.isArray(this._lastSelection.route) && this._lastSelection.route.length > 0)) {
-        //   // this._clearSelectedAsset('ROUTE_CHANGED');
-        //   return;
-        // }
-        // if (!route || this._lastSelection.route === route || (this.multiSelect && Array.isArray(route) && route.length === 0)) return;
-        //
-        // const item = this._assetGraph.getNodeAtRoute(route);
-        // if (item) {
-        //   this._selectAsset(item, 'ROUTE_CHANGED');
-        // } else {
-        //   throw new Error(`The route ${JSON.stringify(route)} could not be found in the items graph.`)
-        // }
+      _selectedRouteChanged(ref) {
+        if (!ref || !ref.path || !this._assetGraph || this._squashSelectedRouteChange) return;
+
+        if (!this.multiSelect && ref.path === 'selectedRoute') {
+          if (this.selected && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
+            this._squashSelectedChange = true;
+            this.deselect(this.selected, 'ROUTE_CHANGED');
+            this._squashSelectedChange = false;
+            return;
+          }
+
+          const item = this._assetGraph.getNodeAtRoute(ref.base);
+          if (item === this.selected) {
+            return;
+          }
+          else if (item) {
+            this.select(item, 'ROUTE_CHANGED');
+          } else {
+            throw new Error(`The route ${JSON.stringify(ref.base)} could not be found in the items graph.`)
+          }
+        }
+
+        if (this.multiSelect && (ref.path === 'selectedRoute' || ref.path == 'selectedRoute.splices')) {
+          if (this.selected.length && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
+            this._squashSelectedChange = true;
+            this.deselect(null, 'ROUTE_CHANGED');
+            this._squashSelectedChange = false;
+            return;
+          }
+
+          if (Array.isArray(ref.base)) {
+            for (let i=0; i<ref.base.length; i++) {
+              this._squashSelectedChange = true;
+              this.selected = ref.base.map(route => {
+                const item = this._assetGraph.getNodeAtRoute(route);
+                if (!item) {
+                  throw new Error(`The following item could not be found in the items graph:
+                    ${JSON.stringify(item)}`);
+                }
+
+                return item;
+              });
+              this._squashSelectedChange = false;
+            }
+          }
+        }
       },
 
       /**
-       * Updates other selected item properties when `selected` changes.
+       * Should only sync changes to `selectedRoute` when necessary to avoid
+       * infinite loop of `selected` observer triggering `selectedRoute` observer.
        */
-      _selsectedChanged(ref) {
-        if (!ref || !ref.path) return;
+     _selectedChanged(ref) {
+        if (!ref || !ref.path || this._squashSelectedChange) return;
 
         if (!this.multiSelect && ref.path === 'selected') {
           this._updateSelectedRoute(ref.base);
@@ -266,16 +368,21 @@
 
           const route = this._assetGraph.getRouteTo(selected);
           if (this._routeIsDifferent(route, this.selectedRoute)) {
+            this._squashSelectedRouteChange = true;
             this.selectedRoute = route;
+            this._squashSelectedRouteChange = false;
           }
         }
         else {
+          this._squashSelectedRouteChange = true;
           this.selectedRoute = null;
+          this._squashSelectedRouteChange = false;
         }
       },
 
       _updateSelectedRouteMulti(selected) {
         if (selected && Array.isArray(selected) && selected.length) {
+          this._squashSelectedRouteChange = true;
           this.selectedRoute = selected.map(item => {
             if (!this._assetGraph.hasNode(item)) {
               throw new Error(`The following item could not be found in the items graph:
@@ -284,8 +391,11 @@
 
             return this._assetGraph.getRouteTo(item);
           });
+          this._squashSelectedRouteChange = false;
         } else {
+          this._squashSelectedRouteChange = true;
           this.selectedRoute = [];
+          this._squashSelectedRouteChange = false;
         }
       },
 
@@ -298,37 +408,20 @@
         return false;
       },
 
-      /**
-       * Gets item metadata from the AssetGraph and updates internaly APIs
-       */
       _selectAsset(item, source) {
-        const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+        const {route, path} = this._assetGraph.getNodeInfo(item);
         this._lastSelection = {
           item: item,
           source: source,
           route: route
         };
-        if(this.multiSelect) {
+        if (!this.multiSelect) {
+          this.selected = item;
+        }
+        if (this.multiSelect) {
           this.push('selected', item);
-          // this.push('selectedRoute', route);
         }
-        else if (this.selected !== item) {
-          this.set('selected', item);
-          // this.set('selectedRoute', route);
-        }
-
-        let details = {
-          source,
-          item,
-          route,
-          path,
-          parent,
-          children,
-          siblings
-        };
-
-        this.fire('px-app-asset-selected', details);
-        return details;
+        this.fire('px-app-asset-selected', {source, item, route, path});
       },
       /**
        * Fired when a new item is selected. Includes details about how the item
@@ -341,80 +434,53 @@
        *   * 'ROUTE_CHANGED' - the array bound to `selectedRoute` changed
        *   * 'ITEM_CHANGED' - the object bound to `selected` changed
        *   * 'METHOD' - the `select()` method was called
-       *   * 'ROUTE_METHOD' - the `selectRoute()` method was called
        *
        * The event will have the following properties:
        *
        *   * {Object} detail - Contains the event details
        *   * {String} detail.source - Info about the change trigger, see above
-       *   * {Object} detail.item - Reference to the selected item
-       *   * {Array} detail.route - Route from the top of the graph to the selected item
-       *   * {Array} detail.path - Path from the top of the graph to the selected item
-       *   * {Object|null} detail.parent - Reference to the selected item's parent, or null if no parent defined
-       *   * {Array} detail.children - Reference to the the selected item's children, or an empty array if no children defined
-       *   * {Array} detail.siblings - Reference to the the selected item's siblings, or an array with only the selected item if no siblings defined
+       *   * {Object} detail.item - Reference to the item
+       *   * {Array} detail.route - Route from the top of the graph to the item
+       *   * {Array} detail.path - Path from the top of the graph to the item
        *
        * @event px-app-asset-selected
        */
 
-       /**
-       * Gets item metadata from the AssetGraph and updates internal APIs
-       */
       _deselectAsset(item, source) {
+        const {route, path} = this._assetGraph.getNodeInfo(item);
+        this._lastSelection = {
+          item: null,
+          source: null,
+          route: null
+        };
         if (!this.multiSelect) {
-          const details = {
-            source,
-            item: this.selectedItem,
-            route: this.selectedRoute,
-            path: this.selectedPath,
-            parent: this.selectedParent,
-            children: this.selectedChildren,
-            siblings: this.selectedSiblings
-          }
           this.set('selected', null);
-          // this.set('selectedRoute', null);
-          this.fire('px-app-asset-deselected', details);
+          this.fire('px-app-asset-deselected', {source, item, route, path});
         }
-        if(this.multiSelect) {
-          const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
-          const details = {
-            source,
-            item,
-            route,
-            path,
-            parent,
-            children,
-            siblings
-          }
+        if (this.multiSelect) {
           this.splice('selected', this.selected.indexOf(item), 1);
-          // this.splice('selectedRoute', this.selectedRoute.indexOf(route), 1);
-          this.fire('px-app-asset-deselected', details);
+          this.fire('px-app-asset-deselected', {source, item, route, path});
         }
       },
-
       /**
        * Fired when a new item is deselected. Includes details about how the item
        * was deselected.
        *
        * The `source` property is a string describing what triggered
-       * the selection:
+       * the deselection:
        *
        *   * 'DOM_EVENT' - the user interacted with an item and selected it
        *   * 'ROUTE_CHANGED' - the array bound to `selectedRoute` changed
        *   * 'ITEM_CHANGED' - the object bound to `selected` changed
        *   * 'METHOD' - the `select()` method was called
-       *   * 'ROUTE_METHOD' - the `selectRoute()` method was called
        *
        * The event will have the following properties:
        *
        *   * {Object} detail - Contains the event details
        *   * {String} detail.source - Info about the change trigger, see above
-       *   * {Object} detail.item - Reference to the selected item
-       *   * {Array} detail.route - Route from the top of the graph to the selected item
-       *   * {Array} detail.path - Path from the top of the graph to the selected item
-       *   * {Object|null} detail.parent - Reference to the selected item's parent, or null if no parent defined
-       *   * {Array} detail.children - Reference to the the selected item's children, or an empty array if no children defined
-       *   * {Array} detail.siblings - Reference to the the selected item's siblings, or an array with only the selected item if no siblings defined
+       *   * {Object} detail.item - Reference to the witem
+       *   * {Array} detail.route - Route from the top of the graph to the item
+       *   * {Array} detail.path - Path from the top of the graph to the item
        *
        * @event px-app-asset-deselected
        */
