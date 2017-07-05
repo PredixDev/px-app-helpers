@@ -8,7 +8,7 @@
 
   interface AssetGraphBehaviorInterface {
     properties: *;
-    items?: Array<{}>;
+    items?: Array<Object>;
     keys?: {
       id?: string,
       label?: string,
@@ -17,7 +17,7 @@
       icon?: string,
     };
     _assetGraph?: AssetGraph | null;
-    _createAssetGraph?: {};
+    _createAssetGraph?: Object;
   }
 
   /**
@@ -116,7 +116,7 @@
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 
-    _handleAssetsChanged(items: Array<{}>, itemsRef: {}, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: {}): AssetGraph | typeof undefined {
+    _handleAssetsChanged(items: Array<Object>, itemsRef: Object, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: Object): AssetGraph | typeof undefined {
       if (this._assetGraph === null && typeof items === 'object' && Array.isArray(items)) {
         this._assetGraph = this._createAssetGraph(items, {
           idKey: keys.id,
@@ -131,13 +131,13 @@
   PxAppBehavior.AssetGraph = AssetGraphBehavior;
 
   type AssetNode = {
-    node: {},
-    parent: {} | null,
-    children: Array<{}>,
+    node: Object,
+    parent: Object | null,
+    children: Array<Object>,
     id: string,
-    path: Array<{}>,
+    path: Array<Object>,
     route: Array<string>,
-    siblings: Array<{}>,
+    siblings: Array<Object>,
   };
 
   class AssetGraph {
@@ -145,8 +145,8 @@
     _idKey: string;
     _childrenKey: string;
     _routeKey: string;
-    _nodeCache: WeakMap<{}, AssetNode>;
-    constructor(nodes: Array<{}>, opts={}) {
+    _nodeCache: WeakMap<Object, AssetNode>;
+    constructor(nodes: Array<Object>, opts={}) {
       this.nodes = nodes;
       this._idKey = opts.idKey || 'id';
       this._childrenKey = opts.childrenKey || 'children';
@@ -154,7 +154,7 @@
       this._nodeCache = this._traceNodes(nodes, this._idKey, this._childrenKey, this._routeKey);
     }
 
-    _traceNodes(nodes: Array<{}>, idKey: string, childrenKey: string, routeKey: string): WeakMap<{}, AssetNode> {
+    _traceNodes(nodes: Array<Object>, idKey: string, childrenKey: string, routeKey: string): WeakMap<Object, AssetNode> {
       const traces = new WeakMap();
       const routeFor = this._extractRoute.bind(this, idKey, routeKey);
       let nodeQueue = nodes.map(n => ({ node: n, parent: null, path: [n], route: [routeFor(n)], siblings: nodes }));
@@ -180,19 +180,19 @@
       return traces;
     }
 
-    _extractRoute(idKey: string, routeKey: string, node: {}): string {
+    _extractRoute(idKey: string, routeKey: string, node: Object): string {
       return node.hasOwnProperty(routeKey) ? node[routeKey] : node[idKey];
     }
 
-    getNodeInfo(node: {}): AssetNode {
+    getNodeInfo(node: Object): AssetNode | typeof undefined {
       return this._nodeCache.get(node);
     }
 
-    hasNode(node: {}): boolean {
+    hasNode(node: Object): boolean {
       return this._nodeCache.has(node);
     }
 
-    getPathTo(node: {}): Array<{}> | typeof undefined {
+    getPathTo(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.path.slice(0);
@@ -204,25 +204,25 @@
       return nodeInfo.route.slice(0);
     }
 
-    getParentOf(node: {}): {} | typeof undefined {
+    getParentOf(node: Object): Object | null | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.parent;
     }
 
-    getChildrenOf(node: {}): Array<{}> | typeof undefined {
+    getChildrenOf(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.children;
     }
 
-    getSiblingsOf(node: {}): Array<{}> | typeof undefined {
+    getSiblingsOf(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.siblings;
     }
 
-    getNodeAtRoute(route: Array<string>): {} | typeof undefined {
+    getNodeAtRoute(route: Array<string>): Object | typeof undefined {
       const routeFor = this._extractRoute.bind(this, this._idKey, this._routeKey)
       const hasChildren = (item) => item.hasOwnProperty(this._childrenKey) && item[this._childrenKey].length > 0;
       let foundItem;
@@ -245,7 +245,7 @@
     }
   };
 
-  function assetGraph(nodes: Array<{}>, options: {}): AssetGraph {
+  function assetGraph(nodes: Array<Object>, options: Object): AssetGraph {
     return new AssetGraph(nodes, options);
   };
 
