@@ -12,17 +12,28 @@
 
 <!-- Imports for this componnent -->
 <link rel="import" href="../../px-demo/css/px-demo-styles.html" />
-<link rel="import" href="../px-app-helpers.html" />
+<link rel="import" href="../px-app-header.html" />
+<link rel="import" href="../../px-app-nav/px-app-nav.html" />
 
 <!-- Demo DOM module -->
 <dom-module id="local-element-demo">
   <template>
-    <style include="px-demo-styles" is="custom-style"></style>
+    <style include="px-demo-styles" is="custom-style">
+      px-demo-component {
+        width:100%;
+      }
+      iframe {
+        width:100%;
+        height:100%;
+        border: none;
+      }
+
+    </style>
 
     <!-- Header -->
     <px-demo-header
-        module-name="px-app-helpers"
-        description="The px-app-helpers component is...">
+        module-name="px-app-header"
+        description="The px-app-header component is...">
     </px-demo-header>
 
     <!-- Interactive -->
@@ -34,21 +45,19 @@
       <px-demo-props props="{{props}}" config="[[chosenConfig]]"></px-demo-props>
 
       <!-- Component ---------------------------------------------------------->
-      <px-demo-component>
-        <px-app-helpers
-          counter-value="{{props.counterValue.value}}">
-        </px-app-helpers>
+       <px-demo-component fullbleed>
+         <iframe style="width:100%;height:100%;" src="../demo.html"></iframe>
       </px-demo-component>
       <!-- END Component ------------------------------------------------------>
 
       <px-demo-component-snippet
           element-properties="{{props}}"
-          element-name="px-app-helpers">
+          element-name="px-app-header">
       </px-demo-component-snippet>
     </px-demo-interactive>
 
     <!-- API Viewer -->
-    <px-demo-api-viewer source="px-app-helpers"></px-demo-api-viewer>
+    <px-demo-api-viewer source="px-app-header"></px-demo-api-viewer>
 
     <!-- Footer -->
     <px-demo-footer></px-demo-footer>
@@ -187,7 +196,8 @@
         value: function(){
           return [
             { configName: "Default",
-              configReset: true }
+              configReset: true
+            }
           ]
         }
       }
@@ -196,12 +206,11 @@
     /**
      * A reference for `this.props`. Read the documentation there.
      */
-    demoProps: {
-      counterValue: {
-        type: Number,
-        defaultValue: '0',
-        inputType: 'text'
-      }
-    }
-  });
+     demoProps: {
+       lightDomContent: {
+         type: String,
+         defaultValue: '<px-app-nav slot="app-nav" item=\'[...]\'></px-app-nav>'
+       }
+     }
+   });
 </script>
