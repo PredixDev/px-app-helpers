@@ -89,6 +89,16 @@
             'route': 'route'
           };
         }
+      },
+
+      /**
+       * Enables logging of recoverable issues with the component's asset
+       * graph to the console.
+       */
+      enableWarnings: {
+        type: Boolean,
+        value: false,
+        observer: '_toggleAssetGraphWarnings'
       }
     },
 
@@ -104,18 +114,27 @@
         this._assetGraph = this._createAssetGraph(items, {
           idKey: keys.id,
           childrenKey: keys.children,
-          routeKey: keys.route
+          routeKey: keys.route,
+          enableWarnings: this.enableWarnings
         });
         this.fire('px-app-asset-graph-created', { graph: this._assetGraph });
         return this._assetGraph;
+      }
+    },
+
+    _toggleAssetGraphWarnings(val) {
+      if (this._assetGraph && this._assetGraph.enableWarnings !== val) {
+        this._assetGraph.enableWarnings = val;
       }
     }
   };
   PxAppBehavior.AssetGraph = AssetGraphBehavior;
 
   class AssetGraph {
+
     constructor(nodes, opts = {}) {
       this.nodes = nodes;
+      this.enableWarnings = typeof opts.enableWarnings === 'boolean' ? opts.enableWarnings : false;
       this._idKey = opts.idKey || 'id';
       this._childrenKey = opts.childrenKey || 'children';
       this._routeKey = opts.routeKey || 'route';
@@ -125,10 +144,33 @@
     _traceNodes(nodes, idKey, childrenKey, routeKey) {
       const traces = new WeakMap();
       const routeFor = this._extractRoute.bind(this, idKey, routeKey);
+      const visitedNodes = [];
+      const visitedIds = [];
       let nodeQueue = nodes.map(n => ({ node: n, parent: null, path: [n], route: [routeFor(n)], siblings: nodes }));
 
       while (nodeQueue.length) {
         let { node, parent, path, route, siblings } = nodeQueue.shift();
+
+        if (this.enableWarnings) {
+          if (visitedNodes.indexOf(node) > -1) {
+            console.warn(`PX-APP-ASSET-GRAPH WARNING:
+              The following node was found more than once in the ${this.is} asset graph.
+              Nodes should be unique and only appear once in the graph. Placing a node
+              in the graph more than once may cause issues:`);
+            console.warn(node);
+          } else if (visitedIds.indexOf(node[idKey]) > -1) {
+            console.warn(`PX-APP-ASSET-GRAPH WARNING:
+              The following unique ID was found more than once in the ${this.is} asset graph.
+              Unique IDs should be used for only one node in the graph. Using a unique ID
+              for more than one node in the graph may cause issues:`);
+            console.warn(node);
+          }
+          visitedNodes.push(node);
+          visitedIds.push(node[idKey]);
+        }
+
+        visitedNodes.push(node);
+        visitedIds.push(node[idKey]);
         let nodeInfo = {
           node: node,
           parent: parent,
