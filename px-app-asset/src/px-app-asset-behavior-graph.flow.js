@@ -8,7 +8,7 @@
 
   interface AssetGraphBehaviorInterface {
     properties: *;
-    items?: Array<{}>;
+    items?: Array<Object>;
     keys?: {
       id?: string,
       label?: string,
@@ -17,7 +17,7 @@
       icon?: string,
     };
     _assetGraph?: AssetGraph | null;
-    _createAssetGraph?: {};
+    _createAssetGraph?: Object;
   }
 
   /**
@@ -104,6 +104,16 @@
             'route' : 'route'
           }
         }
+      },
+
+      /**
+       * Enables logging of recoverable issues with the component's asset
+       * graph to the console.
+       */
+      enableWarnings: {
+        type: Boolean,
+        value: false,
+        observer: '_toggleAssetGraphWarnings'
       }
     },
 
@@ -116,28 +126,35 @@
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 
-    _handleAssetsChanged(items: Array<{}>, itemsRef: {}, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: {}): AssetGraph | typeof undefined {
+    _handleAssetsChanged(items: Array<Object>, itemsRef: Object, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: Object): AssetGraph | typeof undefined {
       if (this._assetGraph === null && typeof items === 'object' && Array.isArray(items)) {
         this._assetGraph = this._createAssetGraph(items, {
           idKey: keys.id,
           childrenKey: keys.children,
-          routeKey: keys.route
+          routeKey: keys.route,
+          enableWarnings: this.enableWarnings
         });
         this.fire('px-app-asset-graph-created', {graph:this._assetGraph});
         return this._assetGraph;
+      }
+    },
+
+    _toggleAssetGraphWarnings(val) {
+      if (this._assetGraph && this._assetGraph.enableWarnings !== val) {
+        this._assetGraph.enableWarnings = val;
       }
     }
   };
   PxAppBehavior.AssetGraph = AssetGraphBehavior;
 
   type AssetNode = {
-    node: {},
-    parent: {} | null,
-    children: Array<{}>,
+    node: Object,
+    parent: Object | null,
+    children: Array<Object>,
     id: string,
-    path: Array<{}>,
+    path: Array<Object>,
     route: Array<string>,
-    siblings: Array<{}>,
+    siblings: Array<Object>,
   };
 
   class AssetGraph {
@@ -145,22 +162,50 @@
     _idKey: string;
     _childrenKey: string;
     _routeKey: string;
-    _nodeCache: WeakMap<{}, AssetNode>;
-    constructor(nodes: Array<{}>, opts={}) {
+    _nodeCache: WeakMap<Object, AssetNode>;
+    is: string;
+    enableWarnings: boolean;
+
+    constructor(nodes: Array<Object>, opts={}) {
       this.nodes = nodes;
+      this.enableWarnings = typeof opts.enableWarnings === 'boolean' ? opts.enableWarnings : false;
       this._idKey = opts.idKey || 'id';
       this._childrenKey = opts.childrenKey || 'children';
       this._routeKey = opts.routeKey || 'route';
       this._nodeCache = this._traceNodes(nodes, this._idKey, this._childrenKey, this._routeKey);
     }
 
-    _traceNodes(nodes: Array<{}>, idKey: string, childrenKey: string, routeKey: string): WeakMap<{}, AssetNode> {
+    _traceNodes(nodes: Array<Object>, idKey: string, childrenKey: string, routeKey: string): WeakMap<Object, AssetNode> {
       const traces = new WeakMap();
       const routeFor = this._extractRoute.bind(this, idKey, routeKey);
+      const visitedNodes: Array<Object> = [];
+      const visitedIds: Array<string> = [];
       let nodeQueue = nodes.map(n => ({ node: n, parent: null, path: [n], route: [routeFor(n)], siblings: nodes }));
 
       while (nodeQueue.length) {
         let {node, parent, path, route, siblings} = nodeQueue.shift();
+
+        if (this.enableWarnings) {
+          if (visitedNodes.indexOf(node) > -1) {
+            console.warn(`PX-APP-ASSET-GRAPH WARNING:
+              The following node was found more than once in the ${this.is} asset graph.
+              Nodes should be unique and only appear once in the graph. Placing a node
+              in the graph more than once may cause issues:`);
+            console.warn(node);
+          }
+          else if (visitedIds.indexOf(node[idKey]) > -1) {
+            console.warn(`PX-APP-ASSET-GRAPH WARNING:
+              The following unique ID was found more than once in the ${this.is} asset graph.
+              Unique IDs should be used for only one node in the graph. Using a unique ID
+              for more than one node in the graph may cause issues:`);
+            console.warn(node);
+          }
+          visitedNodes.push(node);
+          visitedIds.push(node[idKey]);
+        }
+
+        visitedNodes.push(node);
+        visitedIds.push(node[idKey]);
         let nodeInfo = {
           node: node,
           parent: parent,
@@ -180,19 +225,19 @@
       return traces;
     }
 
-    _extractRoute(idKey: string, routeKey: string, node: {}): string {
+    _extractRoute(idKey: string, routeKey: string, node: Object): string {
       return node.hasOwnProperty(routeKey) ? node[routeKey] : node[idKey];
     }
 
-    getNodeInfo(node: {}): AssetNode {
+    getNodeInfo(node: Object): AssetNode | typeof undefined {
       return this._nodeCache.get(node);
     }
 
-    hasNode(node: {}): boolean {
+    hasNode(node: Object): boolean {
       return this._nodeCache.has(node);
     }
 
-    getPathTo(node: {}): Array<{}> | typeof undefined {
+    getPathTo(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.path.slice(0);
@@ -204,25 +249,25 @@
       return nodeInfo.route.slice(0);
     }
 
-    getParentOf(node: {}): {} | typeof undefined {
+    getParentOf(node: Object): Object | null | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.parent;
     }
 
-    getChildrenOf(node: {}): Array<{}> | typeof undefined {
+    getChildrenOf(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.children;
     }
 
-    getSiblingsOf(node: {}): Array<{}> | typeof undefined {
+    getSiblingsOf(node: Object): Array<Object> | typeof undefined {
       let nodeInfo = this.getNodeInfo(node);
       if (!nodeInfo) return undefined;
       return nodeInfo.siblings;
     }
 
-    getNodeAtRoute(route: Array<string>): {} | typeof undefined {
+    getNodeAtRoute(route: Array<string>): Object | typeof undefined {
       const routeFor = this._extractRoute.bind(this, this._idKey, this._routeKey)
       const hasChildren = (item) => item.hasOwnProperty(this._childrenKey) && item[this._childrenKey].length > 0;
       let foundItem;
@@ -245,7 +290,7 @@
     }
   };
 
-  function assetGraph(nodes: Array<{}>, options: {}): AssetGraph {
+  function assetGraph(nodes: Array<Object>, options: Object): AssetGraph {
     return new AssetGraph(nodes, options);
   };
 
