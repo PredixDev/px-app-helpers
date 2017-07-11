@@ -103,21 +103,20 @@ gulp.task('flow:babel', function(cb) {
       console.log(`Transpiling ${path.basename}.flow.js -> dist/${path.basename}.es6.js`);
     }))
     .pipe(gulp.dest(function(file){
-    console.log(file);
-    return '.';
+      return '.';
     }))
     .on('end', cb);
 });
 
 gulp.task('flow', ['flow:babel'], function() {
-  gulp.src(FLOW_SRC)
-    .pipe(flow({
-      all: false,
-      weak: false,
-      killFlow: false,
-      beep: true,
-      abort: false
-    }));
+  // gulp.src(FLOW_SRC)
+  //   .pipe(flow({
+  //     all: false,
+  //     weak: false,
+  //     killFlow: false,
+  //     beep: true,
+  //     abort: false
+  //   }));
 });
 
 gulp.task('watch', function() {

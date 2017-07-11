@@ -128,11 +128,10 @@
 
     _handleAssetsChanged(items: Array<Object>, itemsRef: Object, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: Object): AssetGraph | typeof undefined {
       if (this._assetGraph === null && typeof items === 'object' && Array.isArray(items)) {
-        this._assetGraph = this._createAssetGraph(items, {
-          idKey: keys.id,
-          childrenKey: keys.children,
-          routeKey: keys.route,
-          enableWarnings: this.enableWarnings
+        this._assetGraph = this._createAssetGraph();
+        this._assetGraph.addChildren(null, items, {
+          recursive: true,
+          childrenKey: this.keys.children
         });
         this.fire('px-app-asset-graph-created', {graph:this._assetGraph});
         return this._assetGraph;
@@ -143,144 +142,200 @@
       if (this._assetGraph && this._assetGraph.enableWarnings !== val) {
         this._assetGraph.enableWarnings = val;
       }
+    },
+
+    addChildren(node, children, options) {
+      this._assetGraph.addChildren(node, children, options);
+      this.fire('px-app-asset-children-updated', this._assetGraph.getInfo(node));
     }
   };
   PxAppBehavior.AssetGraph = AssetGraphBehavior;
 
-  type AssetNode = {
-    node: Object,
+  type AssetNodeInfo = {
+    item: Object | null,
     parent: Object | null,
-    children: Array<Object>,
-    id: string,
-    path: Array<Object>,
-    route: Array<string>,
-    siblings: Array<Object>,
-  };
+    siblings: Array<Object> | null,
+    children: Array<Object> | null,
+    path: Array<Object> | null,
+    route: Array<string|null> | null,
+    hasChildren: boolean | null,
+    isTerminal: boolean | null,
+    isExhausted: boolean | null
+  }
+
+  type AssetGraphKeys = {
+    id?: string,
+    children?: string
+  }
 
   class AssetGraph {
-    nodes: Array<any>;
-    _idKey: string;
-    _childrenKey: string;
-    _routeKey: string;
-    _nodeCache: WeakMap<Object, AssetNode>;
-    is: string;
-    enableWarnings: boolean;
+    _options: { enableWarnings?: boolean };
+    _tree: SymbolTree;
+    _rootNode: { ROOT: boolean };
+    _defaultKeys: {
+      id: string,
+      children: string
+    };
+    _symbol: Symbol;
 
-    constructor(nodes: Array<Object>, opts={}) {
-      this.nodes = nodes;
-      this.enableWarnings = typeof opts.enableWarnings === 'boolean' ? opts.enableWarnings : false;
-      this._idKey = opts.idKey || 'id';
-      this._childrenKey = opts.childrenKey || 'children';
-      this._routeKey = opts.routeKey || 'route';
-      this._nodeCache = this._traceNodes(nodes, this._idKey, this._childrenKey, this._routeKey);
+    constructor(options?: { enableWarnings?: boolean }) {
+      /* Save options  */
+      this._options = {
+        enableWarnings: typeof options === 'object' && typeof options.enableWarnings === 'boolean' ? options.enableWarnings : false
+      };
+
+      /* Add default keys */
+      this._defaultKeys = {
+        id: 'id',
+        children: 'children'
+      };
+
+      /* Initialize SymbolTree and prepare its root node */
+      this._tree = new SymbolTree();
+      this._rootNode = { ROOT : true };
+      this._symbol = Symbol('AssetGraph data');
     }
 
-    _traceNodes(nodes: Array<Object>, idKey: string, childrenKey: string, routeKey: string): WeakMap<Object, AssetNode> {
-      const traces = new WeakMap();
-      const routeFor = this._extractRoute.bind(this, idKey, routeKey);
-      const visitedNodes: Array<Object> = [];
-      const visitedIds: Array<string> = [];
-      let nodeQueue = nodes.map(n => ({ node: n, parent: null, path: [n], route: [routeFor(n)], siblings: nodes }));
+    _node(object: Object): { isExhausted: boolean | null, isTerminal: boolean | null } {
+      const node = object[this._symbol];
 
-      while (nodeQueue.length) {
-        let {node, parent, path, route, siblings} = nodeQueue.shift();
+      if (node) {
+        return node;
+      }
+      else {
+        return (object[this._symbol] = { isExhausted: null, isTerminal: null });
+      }
+    }
 
-        if (this.enableWarnings) {
-          if (visitedNodes.indexOf(node) > -1) {
-            console.warn(`PX-APP-ASSET-GRAPH WARNING:
-              The following node was found more than once in the ${this.is} asset graph.
-              Nodes should be unique and only appear once in the graph. Placing a node
-              in the graph more than once may cause issues:`);
-            console.warn(node);
-          }
-          else if (visitedIds.indexOf(node[idKey]) > -1) {
-            console.warn(`PX-APP-ASSET-GRAPH WARNING:
-              The following unique ID was found more than once in the ${this.is} asset graph.
-              Unique IDs should be used for only one node in the graph. Using a unique ID
-              for more than one node in the graph may cause issues:`);
-            console.warn(node);
-          }
-          visitedNodes.push(node);
-          visitedIds.push(node[idKey]);
-        }
+    _getKey(key: 'id' | 'children', val?: string) {
+      return (val && typeof val === 'string' && val.length) ? val : this._defaultKeys[key];
+    }
 
-        visitedNodes.push(node);
-        visitedIds.push(node[idKey]);
-        let nodeInfo = {
-          node: node,
-          parent: parent,
-          children: node.hasOwnProperty(childrenKey) && Array.isArray(node[childrenKey]) ? node[childrenKey] : [],
-          id: node[idKey],
+    /**
+     * Checks if the node is in the graph.
+     *
+     * @param  {Object} node
+     * @return {boolean}
+     */
+    hasNode(node: Object): boolean {
+      if (this._tree.index(node) > -1) {
+        return true;
+      }
+      return false;
+    }
+
+    getInfo(node: Object, routeKey?: string): AssetNodeInfo | null {
+      if (this._tree.index(node) > -1) {
+        const _routeKey = this._getKey('id', routeKey);
+        const path = this.getPath(node);
+        const route = path ? AssetGraph.pathToRoute(path, _routeKey) : null;
+        const parent = this.getParent(node);
+        const siblings = this.getSiblings(node);
+        const children = this.getChildren(node);
+        const hasChildren = (typeof children === 'object' && Array.isArray(children) && children.length > 0);
+        const isTerminal = this.isTerminal(node);
+        const isExhausted = this.isExhausted(node);
+
+        return {
+          item: node,
           path: path,
           route: route,
-          siblings: siblings
-        }
-        if (nodeInfo.children.length) {
-          let childNodes = nodeInfo.children.map(n => ({ node: n, parent: node, path: path.concat([n]), route: route.concat([routeFor(n)]), siblings: nodeInfo.children }));
-          nodeQueue = nodeQueue.concat(childNodes);
-        }
-        traces.set(node, nodeInfo);
+          parent: parent,
+          siblings: siblings,
+          children: children,
+          hasChildren: hasChildren,
+          isTerminal: isTerminal,
+          isExhausted: isExhausted
+        };
+
+      }
+      return null;
+    }
+
+    /**
+     * Returns a reference to the node's parent. If the node has no parent or is
+     * not in the graph, returns null.
+     *
+     * @param  {Object} node
+     * @return {Object|null}
+     */
+    getParent(node: Object | null): Object | null {
+      if (node && this._tree.index(node) > -1) {
+        const parent = this._tree.parent(node);
+        return parent !== this._rootNode ? parent : null;
+      }
+      return null;
+    }
+
+    /**
+     * Returns a reference to the node's siblings (the children of its parent).
+     * The returned array includes the node.
+     *
+     * @param  {Object} node
+     * @return {Array<Object>|null}
+     */
+    getSiblings(node: Object | null): Array<Object> | null {
+      if (node && this._tree.index(node) > -1) {
+        return this._tree.childrenToArray(this._tree.parent(node));
+      }
+      return null;
+    }
+
+    /**
+     * Returns an array of ancestor nodes from the root of the graph to the requested
+     * node. The returned array includes the node.
+     *
+     * @param  {Object} node
+     * @return {Array<Object>|null}
+     */
+    getPath(node: Object | null): Array<Object> | null {
+      if (node && this._tree.index(node) > -1) {
+        // reverse so its root->node, slice to remove the virtual root node
+        return this._tree.ancestorsToArray(node).reverse().slice(1);
+      }
+      return null;
+    }
+
+    /**
+     * Returns an array of unique IDs for each ancestor of the requested node
+     * starting at the root of the graph and ending with the requested node.
+     *
+     * @param  {Object} node
+     * @return {Array<string>|null}
+     */
+    getRoute(node: Object | null, routeKey?: string): Array<string|null> | null {
+      if (node && this._tree.index(node) > -1) {
+        const _routeKey = typeof routeKey === 'string' && routeKey.length ? routeKey : this._defaultKeys.id;
+        const ancestors = this.getPath(node);
+        // if (!ancestors) return null;
+        // const path = [];
+        // for (let i=0; i<ancestors.length; i++) {
+        //   path.push(typeof ancestors[i][_routeKey] === 'string' && ancestors[i][_routeKey].length ? ancestors[i][_routeKey] : null);
+        // }
+        // return path;
+        return ancestors ? AssetGraph.pathToRoute(ancestors, _routeKey) : null;
+      }
+      return null;
+    }
+
+    getNodeAtRoute(route: Array<string>, routeKey?: string): Object | null {
+      if (typeof route !== 'object' || !Array.isArray(route) || !route.length) {
+        throw new Error('An array of route strings is required.');
       }
 
-      return traces;
-    }
-
-    _extractRoute(idKey: string, routeKey: string, node: Object): string {
-      return node.hasOwnProperty(routeKey) ? node[routeKey] : node[idKey];
-    }
-
-    getNodeInfo(node: Object): AssetNode | typeof undefined {
-      return this._nodeCache.get(node);
-    }
-
-    hasNode(node: Object): boolean {
-      return this._nodeCache.has(node);
-    }
-
-    getPathTo(node: Object): Array<Object> | typeof undefined {
-      let nodeInfo = this.getNodeInfo(node);
-      if (!nodeInfo) return undefined;
-      return nodeInfo.path.slice(0);
-    }
-
-    getRouteTo(node): Array<string> | typeof undefined {
-      let nodeInfo = this.getNodeInfo(node);
-      if (!nodeInfo) return undefined;
-      return nodeInfo.route.slice(0);
-    }
-
-    getParentOf(node: Object): Object | null | typeof undefined {
-      let nodeInfo = this.getNodeInfo(node);
-      if (!nodeInfo) return undefined;
-      return nodeInfo.parent;
-    }
-
-    getChildrenOf(node: Object): Array<Object> | typeof undefined {
-      let nodeInfo = this.getNodeInfo(node);
-      if (!nodeInfo) return undefined;
-      return nodeInfo.children;
-    }
-
-    getSiblingsOf(node: Object): Array<Object> | typeof undefined {
-      let nodeInfo = this.getNodeInfo(node);
-      if (!nodeInfo) return undefined;
-      return nodeInfo.siblings;
-    }
-
-    getNodeAtRoute(route: Array<string>): Object | typeof undefined {
-      const routeFor = this._extractRoute.bind(this, this._idKey, this._routeKey)
-      const hasChildren = (item) => item.hasOwnProperty(this._childrenKey) && item[this._childrenKey].length > 0;
-      let foundItem;
+      const _routeKey = typeof routeKey === 'string' && routeKey.length ? routeKey : this._defaultKeys.id;
       let searchRoute = route.slice(0);
-      let items = this.nodes.slice(0);
+      let items = this._tree.childrenToArray(this._rootNode).slice(0);
+      let foundItem = null;
 
       while (!foundItem && items.length > 0 && searchRoute.length > 0) {
         let item = items.shift();
-        if (routeFor(item) === searchRoute[0] && hasChildren(item) && searchRoute.length !== 1) {
+        if (item[_routeKey] === searchRoute[0] && this._tree.childrenCount(item) > 0 && searchRoute.length !== 1) {
           searchRoute.shift();
-          items = item[this._childrenKey].slice(0);
+          items = this._tree.childrenToArray(item).slice(0);
+          continue;
         }
-        if (routeFor(item) === searchRoute[0] && searchRoute.length === 1) {
+        if (item[_routeKey] === searchRoute[0] && searchRoute.length === 1) {
           foundItem = item;
           break;
         }
@@ -288,10 +343,145 @@
 
       return foundItem;
     }
+
+    /**
+     * Returns a reference to the requested node's children. The returned array
+     * will be empty if no children are defined.
+     *
+     * @param  {Object} node
+     * @return {Array<Object>|null}
+     */
+    getChildren(node: Object | null): Array<Object> | null {
+      const _node = (node === null) ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        return this._tree.childrenToArray(_node);
+      }
+      return null;
+    }
+
+    /**
+     * Checks if the node has any children.
+     *
+     * @param  {Object} node
+     * @return {boolean|null}
+     */
+    hasChildren(node: Object | null): boolean | null {
+      const _node = (node === null) ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        return this._tree.childrenCount(_node) > 0;
+      }
+      return null;
+    }
+
+    /**
+     * Adds a child or children to the requested node. Can pass a single object
+     * to add one child, or an array of objects to add multiple children.
+     * If `node` is null, the child object(s) will be added to the root of the graph.
+     *
+     * @param  {Object|null} node
+     * @param  {Object|Array<Object>} children
+     * @return {Array<Object>|undefined} the updated child array of the node
+     */
+    addChildren(node: Object | null, children: Object | Array<Object>, options?: { isExhausted?: boolean, recursive?: boolean,
+    childrenKey?: boolean }): Array<Object> | null {
+      if (typeof children !== 'object' || (Array.isArray(children) && !children.length)) {
+        throw new Error('A child object or array of child objects is required.');
+      }
+
+      if (node !== null && typeof node === 'object' && !this.hasNode(node)) {
+        throw new Error('The parent node must be a node in the graph or null.')
+      }
+
+      const parent = (node !== null) ? node : this._rootNode;
+      const childArray = Array.isArray(children) ? children : [children];
+      const childKey = (typeof options === 'object' && typeof options.childrenKey === 'string' && options.childrenKey.length)
+        ? options.childrenKey : this._defaultKeys.children;
+      const isRecursive = (typeof options === 'object' && typeof options.recursive === 'boolean')
+        ? options.recursive : false;
+      for (let i=0; i<children.length; i++) {
+        const info = this._node(children[i]);
+        info.isTerminal = children[i].hasOwnProperty('isTerminal') ? children[i].isTerminal : null;
+        info.isExhausted = children[i].hasOwnProperty('isExhausted') ? children[i].isExhausted : null;
+        this._tree.appendChild(parent, children[i]);
+        if (isRecursive && typeof children[i][childKey] === 'object' && Array.isArray(children[i][childKey]) && children[i][childKey].length) {
+          this.addChildren(children[i], children[i][childKey], { recursive: true });
+        }
+      }
+
+      if (typeof options === 'object' && typeof options.isExhausted === 'boolean') {
+        const isExhausted: boolean = options.isExhausted;
+        const info = this._node(parent);
+        info.isExhausted = isExhausted;
+      }
+
+      return this.getChildren(parent);
+    }
+
+    /**
+     * Removes a child or children from the requested node. Can pass a single object
+     * by reference to remove one child, or an array of objects by reference to
+     * remove multiple children. If `node` is null, the child object(s) will be
+     * removed from the root of the graph.
+     *
+     * @param  {Object|null} node
+     * @param  {Object|Array<Object>} children
+     * @return {Array<Object>|undefined} the updated child array of the node
+     */
+    // removeChildren(node: Object | null, children?: Object | Array<Object>, options?: { isExhausted: boolean }): Array<Object> | typeof undefined {
+    //
+    // }
+
+    isExhausted(node: Object | null): boolean | null {
+      const _node = (node === null) ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        const info = this._node(_node);
+        return info && info.isExhausted === true ? true : false;
+      }
+      return null;
+    }
+
+    setExhausted(node: Object | null, isExhausted: boolean): boolean | null {
+      const _node = (node === null) ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        const info = this._node(_node);
+        info.isExhausted = isExhausted;
+        return isExhausted;
+      }
+      return null;
+    }
+
+    isTerminal(node: Object | null): boolean | null {
+      if (node === null) {
+        // The root node can never be terminal, it must have children
+        return false;
+      }
+      if (this._tree.index(node) > -1) {
+        const info = this._node(node);
+        return info && info.isTerminal === true ? true : false;
+      }
+      return null;
+    }
+
+    setTerminal(node: Object | null, isTerminal: boolean): boolean | null {
+      if (node === null) {
+        // The root node can never be terminal, it must have children
+        throw new Error('The root node can never be terminal, it must have children.');
+      }
+      if (this._tree.index(node) > -1) {
+        const info = this._node(node);
+        info.isTerminal = isTerminal;
+        return isTerminal;
+      }
+      return null;
+    }
+
+    static pathToRoute(path: Array<Object>, routeKey: string): Array<string|null> {
+      return path.map(p => typeof p[routeKey] === 'string' && p[routeKey].length ? p[routeKey] : null);
+    }
   };
 
-  function assetGraph(nodes: Array<Object>, options: Object): AssetGraph {
-    return new AssetGraph(nodes, options);
+  function assetGraph(options: Object): AssetGraph {
+    return new AssetGraph(options);
   };
 
   const PxApp = window.PxApp = (window.PxApp || {});

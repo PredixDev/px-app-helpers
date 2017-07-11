@@ -252,14 +252,14 @@
 
       _getSelectedMeta(selected) {
         if (selected.base && !Array.isArray(selected.base) && this._assetGraph && this._assetGraph.hasNode(selected.base)) {
-          const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(selected.base);
+          const {path, route, parent, children, siblings} = this._assetGraph.getInfo(selected.base);
           return {
             item: selected.base, path, route, parent, children, siblings
           };
         }
         if (selected.base && Array.isArray(selected.base) && selected.base.length) {
           return selected.base.map(item => {
-            const {path, route, parent, children, siblings} = this._assetGraph.getNodeInfo(item);
+            const {path, route, parent, children, siblings} = this._assetGraph.getInfo(item);
             return {
               item, path, route, parent, children, siblings
             };
@@ -366,7 +366,7 @@
             return;
           }
 
-          const route = this._assetGraph.getRouteTo(selected);
+          const route = this._assetGraph.getRoute(selected);
           if (this._routeIsDifferent(route, this.selectedRoute)) {
             this._squashSelectedRouteChange = true;
             this.selectedRoute = route;
@@ -389,7 +389,7 @@
                 ${JSON.stringify(item)}`);
             }
 
-            return this._assetGraph.getRouteTo(item);
+            return this._assetGraph.getRoute(item);
           });
           this._squashSelectedRouteChange = false;
         } else {
@@ -409,7 +409,7 @@
       },
 
       _selectAsset(item, source) {
-        const {route, path} = this._assetGraph.getNodeInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item);
         this._lastSelection = {
           item: item,
           source: source,
@@ -447,7 +447,7 @@
        */
 
       _deselectAsset(item, source) {
-        const {route, path} = this._assetGraph.getNodeInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item);
         this._lastSelection = {
           item: null,
           source: null,

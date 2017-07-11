@@ -134,7 +134,7 @@ function runCustomTests() {
         expect(fx.selectedMeta.path[1]).to.equal(data[0].children[0]);
         expect(fx.selectedMeta.path[2]).to.equal(item);
         expect(fx.selectedMeta.route).to.eql(['united-states', 'calif', 'wc']);
-        expect(fx.selectedMeta.parent).to.equal(data[0].children[0]);
+        expect(fx.selectedMeta.parent).to.eql(data[0].children[0]);
         expect(fx.selectedMeta.children).to.be.eql([]);
         expect(fx.selectedMeta.siblings).to.be.eql(data[0].children[0].children);
       });
@@ -385,10 +385,10 @@ function runCustomTests() {
         expect(fx.selectedMeta[1].route).to.eql(['united-states','ariz']);
         expect(fx.selectedMeta[0].parent).to.equal(data[0]);
         expect(fx.selectedMeta[1].parent).to.equal(data[0]);
-        expect(fx.selectedMeta[0].children).to.equal(item1.children);
+        expect(fx.selectedMeta[0].children).to.eql(item1.children);
         expect(fx.selectedMeta[1].children).to.eql([]);
-        expect(fx.selectedMeta[0].siblings).to.equal(data[0].children);
-        expect(fx.selectedMeta[1].siblings).to.equal(data[0].children);
+        expect(fx.selectedMeta[0].siblings).to.eql(data[0].children);
+        expect(fx.selectedMeta[1].siblings).to.eql(data[0].children);
       });
     });
   });
