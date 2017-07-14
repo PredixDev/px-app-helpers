@@ -1,2 +1,1 @@
-const SymbolTree = require('symbol-tree');
-exports = module.exports = SymbolTree;
+(typeof window.SymbolTree === 'undefined') && (window.SymbolTree = require('symbol-tree'));

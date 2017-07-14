@@ -17,6 +17,8 @@
         "babel-preset-flow": "^6.23.0",
         "browser-sync": "^2.13.0",
         "browserify": "^14.4.0",
+        "buble": "^0.15.2",
+        "es6-symbol": "^3.1.1",
         "flow-bin": "^0.48.0",
         "gulp": "^3.9.1",
         "gulp-autoprefixer": "^3.1.0",
@@ -37,9 +39,13 @@
         "gulp-style-modules": "^0.1.0",
         "node-sass-import-once": "^1.2.0",
         "stream-combiner2": "^1.1.1",
-        "yargs": "^6.0.0"
-    },
-    "dependencies": {
+        "uglify-js": "^3.0.24",
+        "yargs": "^6.0.0",
         "symbol-tree": "^3.2.2"
+    },
+    "scripts": {
+        "dist": "npm run-script dist:symbol-tree && npm run-script dist:symbol-polyfill",
+        "dist:symbol-polyfill": "rm -f symbol-polyfill/dist/*.js && ./node_modules/.bin/browserify symbol-polyfill/src/symbol-polyfill.js | ./node_modules/.bin/uglifyjs > symbol-polyfill/dist/symbol-polyfill.min.js",
+        "dist:symbol-tree": "rm -f symbol-tree/dist/*.js && ./node_modules/.bin/browserify symbol-tree/src/symbol-tree.js | ./node_modules/.bin/buble --no modules | ./node_modules/.bin/uglifyjs > symbol-tree/dist/symbol-tree.min.js"
     }
 }
