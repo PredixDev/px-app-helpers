@@ -153,6 +153,7 @@
       ],
 
       listeners: {
+        'px-app-asset-graph-created': '__selectInitialAssets',
         'px-app-asset-should-be-selected' : '_assetSelectedByEvent',
         'px-app-asset-should-be-deselected' : '_assetDeselectedByEvent'
       },
@@ -298,46 +299,54 @@
         if (!ref || !ref.path || !this._assetGraph || this._squashSelectedRouteChange) return;
 
         if (!this.multiSelect && ref.path === 'selectedRoute') {
-          if (this.selected && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
-            this._squashSelectedChange = true;
-            this.deselect(this.selected, 'ROUTE_CHANGED');
-            this._squashSelectedChange = false;
-            return;
-          }
-
-          const item = this._assetGraph.getNodeAtRoute(ref.base);
-          if (item === this.selected) {
-            return;
-          }
-          else if (item) {
-            this.select(item, 'ROUTE_CHANGED');
-          } else {
-            throw new Error(`The route ${JSON.stringify(ref.base)} could not be found in the items graph.`)
-          }
+          this._updateSelectedFromRoute(ref.base);
         }
 
         if (this.multiSelect && (ref.path === 'selectedRoute' || ref.path == 'selectedRoute.splices')) {
-          if (this.selected.length && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
+          this._updateSelectedFromRouteMulti(ref.base);
+        }
+      },
+
+      _updateSelectedFromRoute(route) {
+        if (this.selected && (route === null || (Array.isArray(route) && !route.length))) {
+          this._squashSelectedChange = true;
+          this.deselect(this.selected, 'ROUTE_CHANGED');
+          this._squashSelectedChange = false;
+          return;
+        }
+
+        const item = this._assetGraph.getNodeAtRoute(route);
+        if (item === this.selected) {
+          return;
+        }
+        else if (item) {
+          this.select(item, 'ROUTE_CHANGED');
+        } else {
+          throw new Error(`The route ${JSON.stringify(route)} could not be found in the items graph.`)
+        }
+      },
+
+      _updateSelectedFromRouteMulti(route) {
+        if (this.selected.length && (route === null || (Array.isArray(route) && !route.length))) {
+          this._squashSelectedChange = true;
+          this.deselect(null, 'ROUTE_CHANGED');
+          this._squashSelectedChange = false;
+          return;
+        }
+
+        if (Array.isArray(route)) {
+          for (let i=0; i<route.length; i++) {
             this._squashSelectedChange = true;
-            this.deselect(null, 'ROUTE_CHANGED');
+            this.selected = route.map(route => {
+              const item = this._assetGraph.getNodeAtRoute(route);
+              if (!item) {
+                throw new Error(`The following item could not be found in the items graph:
+                  ${JSON.stringify(item)}`);
+              }
+
+              return item;
+            });
             this._squashSelectedChange = false;
-            return;
-          }
-
-          if (Array.isArray(ref.base)) {
-            for (let i=0; i<ref.base.length; i++) {
-              this._squashSelectedChange = true;
-              this.selected = ref.base.map(route => {
-                const item = this._assetGraph.getNodeAtRoute(route);
-                if (!item) {
-                  throw new Error(`The following item could not be found in the items graph:
-                    ${JSON.stringify(item)}`);
-                }
-
-                return item;
-              });
-              this._squashSelectedChange = false;
-            }
           }
         }
       },
@@ -347,13 +356,13 @@
        * infinite loop of `selected` observer triggering `selectedRoute` observer.
        */
      _selectedChanged(ref) {
-        if (!ref || !ref.path || this._squashSelectedChange) return;
+        if (!ref || !ref.path || this._squashSelectedChange || !this._assetGraph) return;
 
-        if (!this.multiSelect && ref.path === 'selected') {
+        if (!this.multiSelect && ref.path === 'selected' && typeof this.selectedRoute !== 'undefined') {
           this._updateSelectedRoute(ref.base);
         }
 
-        if (this.multiSelect && (ref.path === 'selected' || ref.path === 'selected.splices')) {
+        if (this.multiSelect && (ref.path === 'selected' || ref.path === 'selected.splices') && typeof this.selectedRoute !== 'undefined') {
           this._updateSelectedRouteMulti(ref.base);
         }
       },
@@ -396,6 +405,21 @@
           this._squashSelectedRouteChange = true;
           this.selectedRoute = [];
           this._squashSelectedRouteChange = false;
+        }
+      },
+
+      __selectInitialAssets() {
+        if (!this.multiSelect && this.selected && !this.selectedRoute) {
+          this._updateSelectedRoute(this.selected);
+        }
+        else if (!this.multiSelect && !this.selected && this.selectedRoute) {
+          this._updateSelectedFromRoute(this.selectedRoute);
+        }
+        else if (this.multiSelect && this.selected.length && !this.selectedRoute.length) {
+          this._updateSelectedRouteMulti(this.selected);
+        }
+        else if (this.multiSelect && !this.selected.length && this.selectedRoute.length) {
+          this._updateSelectedFromRouteMulti(this.selected);
         }
       },
 
