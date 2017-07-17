@@ -268,6 +268,15 @@
     }
 
     /**
+     * This method returns whether or not the passed in item as any siblings.
+     * @param {Object} node
+     */
+    hasSiblings(node) {
+      var siblings = this.getSiblings(node);
+      return siblings && siblings.length > 1;
+    }
+
+    /**
      * Returns a reference to the node's siblings (the children of its parent).
      * The returned array includes the node.
      *
