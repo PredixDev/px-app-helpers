@@ -66,7 +66,7 @@ gulp.task('sass', function() {
 });
 
 // Globbing pattern to find ES6 source files that need to be transpiled
-const ES6_SRC = ['px*/*.es6.js', '!px-app-asset/**'];
+const ES6_SRC = ['px*/*.es6.js'];
 
 gulp.task('transpile', function() {
   return gulp.src(ES6_SRC)
@@ -121,7 +121,6 @@ gulp.task('flow', ['flow:babel'], function() {
 
 gulp.task('watch', function() {
   gulp.watch(FLOW_SRC, ['flow']);
-  gulp.watch(ES6_SRC, ['transpile']);
   gulp.watch(['sass/*.scss'], ['sass']);
 });
 
@@ -136,7 +135,6 @@ gulp.task('serve', function() {
   });
 
   gulp.watch(FLOW_SRC, ['flow']);
-  gulp.watch(ES6_SRC, ['transpile']);
   gulp.watch(['px*/sass/*.scss'], ['sass']);
   gulp.watch(['px*/css/*-styles.html', 'px*/*.html', `px*/dist/*.js`, 'demo/*.html']).on('change', browserSync.reload);
 });
@@ -160,5 +158,5 @@ gulp.task('bump:major', function(){
 });
 
 gulp.task('default', function(callback) {
-  gulpSequence('clean', 'sass', 'transpile', 'flow')(callback);
+  gulpSequence('clean', 'sass', 'flow')(callback);
 });
