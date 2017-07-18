@@ -1,5 +1,6 @@
 {
   "verbose": false,
+  "compile": "auto",
   "plugins": {
     "local": {
       "browsers": [
