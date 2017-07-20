@@ -15,14 +15,12 @@
 
 
 <!--
-REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
-
 ##### Usage
 
-    <px-app-header counter-value="1"></px-app-header>
+    <px-app-header></px-app-header>
 
 @element px-app-header
-@blurb REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
+@blurb A component combining a branding bar element and nav element header with scroll region & effect.
 @homepage index.html
 @demo index.html
 -->
@@ -31,7 +29,7 @@ REPLACE THIS TEXT WITH A COMPONENT DESCRIPTION
   <template>
     <style include="px-app-header-styles"></style>
     <app-header-layout fullbleed>
-      <app-header slot="header" fixed condenses effects="px-app-header-scroll-effect">
+      <app-header slot="header" fixed condenses="[[_condenses]]" effects="[[_scrollEffect]]">
         <div header-container sticky>
           <slot name="branding-bar">
             <px-branding-bar></px-branding-bar>

@@ -13,6 +13,9 @@
     run: function(progress) {
       let dy = ((this.navContainer.navHeight - this.headerContainer.headerHeight + this.condensedHeaderSize) * progress);
       this.transform(`translateY(${dy}px)`, this.navContainer.navElement);
+      if(progress === 0){
+        this.dispatchEvent(new CustomEvent('px-app-header-scroll-reset'));
+      }
     },
 
     tearDown: function() {
@@ -20,6 +23,7 @@
        this.navContainer.navElement.style.willChange = "auto";
        delete this.navContainer;
        delete this.headerContainer;
+
     }
   });
 })();
