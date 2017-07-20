@@ -111,8 +111,10 @@ bower install
 # checkout a new orphan
 git checkout --orphan $TARGET_BRANCH
 
-git add -A .
-git commit -m "${GIT_COMMIT_MESSAGE}"
+git add -A . --quiet
+echo "git add done"
+git commit -m "${GIT_COMMIT_MESSAGE}" --quiet
+echo "git commit done"
 
 # Set git credentials (defined in settings above)
 git config user.name ${GIT_USER_NAME}
