@@ -111,7 +111,7 @@ bower install
 # checkout a new orphan
 git checkout --orphan $TARGET_BRANCH
 
-git add -A . --quiet
+git add -A . > /dev/null
 echo "git add done"
 git commit -m "${GIT_COMMIT_MESSAGE}" --quiet
 echo "git commit done"
