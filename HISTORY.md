@@ -1,7 +1,5 @@
-v0.0.2
-==================
-* Add `px-app-asset` behaviors. These are initial concepts and not finished. Don't rely on them yet.
-
-v0.0.1
+v1.0.0
 ==================
 * Initial release
+* Add `px-app-asset` behaviors.
+* Add `px-app-header` control for page layout with branding bar and app nav element.
