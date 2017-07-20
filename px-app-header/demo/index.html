@@ -46,7 +46,7 @@
 
       <!-- Component ---------------------------------------------------------->
        <px-demo-component fullbleed>
-         <iframe style="width:100%;height:100%;" src="../demo.html"></iframe>
+         <iframe id="demoframe" style="width:100%;height:100%;" src="../demo.html"></iframe>
       </px-demo-component>
       <!-- END Component ------------------------------------------------------>
 
@@ -152,7 +152,6 @@
         type: Object,
         value: function(){ return this.demoProps; }
       },
-
       /**
        * An array of pre-configured `props` that can be used to provide the user
        * with a set of common examples. These configs will be made available
@@ -202,15 +201,29 @@
         }
       }
     },
-
+    observers: [
+      '_fixedChanged(props.fixed.value)'
+    ],
     /**
      * A reference for `this.props`. Read the documentation there.
      */
      demoProps: {
+       fixed:{
+         type: Boolean,
+         value: false,
+         inputType: 'toggle'
+       },
        lightDomContent: {
          type: String,
          defaultValue: '<px-app-nav slot="app-nav" item=\'[...]\'></px-app-nav>'
        }
+     },
+     _fixedChanged: function(val){
+      var appHeaderEl = window.frames['demoframe'].contentDocument.querySelector('px-app-header');
+      if (appHeaderEl){
+        // window.frames['demoframe'].contentWindow.scrollTo(0,0);
+        appHeaderEl.fixed = val;
+      }
      }
    });
 </script>
