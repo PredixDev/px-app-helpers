@@ -1,3 +1,7 @@
+v1.0.1
+==================
+* Fixing px-app-header demos.
+
 v1.0.0
 ==================
 * Initial release
