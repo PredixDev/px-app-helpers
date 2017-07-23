@@ -1,3 +1,7 @@
+v1.0.2
+==================
+* Update `keys` property in px-app-helpers to include label
+
 v1.0.1
 ==================
 * Fixing px-app-header demos.

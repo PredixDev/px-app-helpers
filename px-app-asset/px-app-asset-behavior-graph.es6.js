@@ -84,9 +84,10 @@
         value: function () {
           return {
             'id': 'id',
-            'icon': 'icon',
+            'label': 'label',
             'children': 'children',
-            'route': 'route'
+            'route': 'route',
+            'icon': 'icon'
           };
         }
       },
