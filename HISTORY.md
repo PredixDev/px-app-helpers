@@ -1,3 +1,8 @@
+v1.1.0
+==================
+* Adds the px-app-route component to help with binding an app's state to the URL
+  using Predix Design System components
+
 v1.0.3
 ==================
 * Removed enableWarnings property
