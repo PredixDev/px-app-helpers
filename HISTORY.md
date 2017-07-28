@@ -1,3 +1,7 @@
+v1.0.3
+==================
+* Removed enableWarnings property
+
 v1.0.2
 ==================
 * Update `keys` property in px-app-helpers to include label

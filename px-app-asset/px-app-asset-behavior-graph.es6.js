@@ -90,16 +90,6 @@
             'icon': 'icon'
           };
         }
-      },
-
-      /**
-       * Enables logging of recoverable issues with the component's asset
-       * graph to the console.
-       */
-      enableWarnings: {
-        type: Boolean,
-        value: false,
-        observer: '_toggleAssetGraphWarnings'
       }
     },
 
@@ -122,12 +112,6 @@
       }
     },
 
-    _toggleAssetGraphWarnings(val) {
-      if (this._assetGraph && this._assetGraph.enableWarnings !== val) {
-        this._assetGraph.enableWarnings = val;
-      }
-    },
-
     addChildren(node, children, options) {
       this._assetGraph.addChildren(node, children, options);
       this.fire('px-app-asset-children-updated', this._assetGraph.getInfo(node));
@@ -139,9 +123,7 @@
 
     constructor(options) {
       /* Save options  */
-      this._options = {
-        enableWarnings: typeof options === 'object' && typeof options.enableWarnings === 'boolean' ? options.enableWarnings : false
-      };
+      this._options = {};
 
       /* Add default keys */
       this._defaultKeys = {
