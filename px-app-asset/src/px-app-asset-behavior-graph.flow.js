@@ -105,16 +105,6 @@
             'icon' : 'icon'
           }
         }
-      },
-
-      /**
-       * Enables logging of recoverable issues with the component's asset
-       * graph to the console.
-       */
-      enableWarnings: {
-        type: Boolean,
-        value: false,
-        observer: '_toggleAssetGraphWarnings'
       }
     },
 
@@ -136,12 +126,6 @@
         });
         this.fire('px-app-asset-graph-created', {graph:this._assetGraph});
         return this._assetGraph;
-      }
-    },
-
-    _toggleAssetGraphWarnings(val) {
-      if (this._assetGraph && this._assetGraph.enableWarnings !== val) {
-        this._assetGraph.enableWarnings = val;
       }
     },
 
@@ -170,7 +154,7 @@
   }
 
   class AssetGraph {
-    _options: { enableWarnings?: boolean };
+    _options: Object;
     _tree: SymbolTree;
     _rootNode: { ROOT: boolean };
     _defaultKeys: {
@@ -179,11 +163,9 @@
     };
     _symbol: Symbol;
 
-    constructor(options?: { enableWarnings?: boolean }) {
+    constructor(options?: {}) {
       /* Save options  */
-      this._options = {
-        enableWarnings: typeof options === 'object' && typeof options.enableWarnings === 'boolean' ? options.enableWarnings : false
-      };
+      this._options = {};
 
       /* Add default keys */
       this._defaultKeys = {
