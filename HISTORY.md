@@ -1,3 +1,7 @@
+v1.1.1
+==================
+* Update demos
+
 v1.1.0
 ==================
 * Adds the px-app-route component to help with binding an app's state to the URL

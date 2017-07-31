@@ -2,37 +2,34 @@
 <link rel="import" href="px-app-route-helpers.html"/>
 
 <!--
-`px-app-route` supports easy binding between various Predix UI components and
-a web app's URL. It helps keep UI state in sync with the URL, allowing users
-to bookmark or share views by copying the current URL state.
 
-`px-app-route` relies on the Polymer team's [`app-location`](https://www.webcomponents.org/element/PolymerElements/app-route)
+The px-app-route component relies on the Polymer team's [app-location](https://www.webcomponents.org/element/PolymerElements/app-route)
 element to manage the window location and history state. The element will consume
-the `route` provided by `app-location` and send updates to other components
+the `route` provided by app-location and send updates to other components
 on the page when the URL changes. Interaction with other components on the page
 will be propagated up to the URL using the same bindings.
 
 ### Installing and including in an app
 
-The `px-app-route` element is included as part of the `px-app-helpers` package.
+The px-app-route element is included as part of the [px-app-helpers](https://github.com/PredixDev/px-app-helpers) package.
 To install the element using bower, use the following command:
 
     bower install --save px-app-helpers
 
 After installing, import the code using HTML imports into the app file that
-implements `px-app-helpers`. You'll also need to import `app-location` from the
-Polymer team's `app-route` package.
+implements px-app-helpers. You'll also need to import app-location from the
+Polymer team's app-route package.
 
     <link rel="import" href="/bower_components/app-route/app-location.html"/>
     <link rel="import" href="/bower_components/px-app-helpers/px-app-route/px-app-route.html"/>
 
-The `app-route` package will be installed automatically when `px-app-helpers`
+The app-route package will be installed automatically when px-app-helpers
 is included in your bower file.
 
 ### Using px-app-route
 
-The following simplified example shows how `px-app-route` can be used to send
-updates to the [`px-app-nav`](https://www.predix-ui.com/#/components/px-app-nav/)
+The following simplified example shows how px-app-route can be used to send
+updates to the [px-app-nav](https://www.predix-ui.com/#/components/px-app-nav/)
 element when the URL changes, and update the URL when the navigation is
 interacted with:
 
@@ -68,7 +65,7 @@ If the following `navItems` are defined:
     ]
 
 Then tapping on the 'Alerts' navigation button will change the URL to
-"https://example.com/#/dashboards/alerts". Bookmarking that URL and loading
+"example.com/#/dashboards/alerts". Bookmarking that URL and loading
 it again later will automatically select the 'Alerts' navigation item
 on page load.
 
@@ -77,11 +74,11 @@ on page load.
 Many complex applications require the user the navigate to a view (like the
 'Alerts' dashboard view in the example above) and provide some additional
 information about the kind of asset or context they would like to view.
-The [`px-context-browser`](https://www.predix-ui.com/#/components/px-context-browser/)
-and [`px-breadcrumbs`](https://www.predix-ui.com/#/components/px-breadcrumbs/)
+The [px-context-browser](https://www.predix-ui.com/#/components/px-context-browser/)
+and [px-breadcrumbs](https://www.predix-ui.com/#/components/px-breadcrumbs/)
 elements both help the user select the specific asset they would like to view.
 
-The `px-app-route` element supports binding to the navigation to allow users to
+The px-app-route element supports binding to the navigation to allow users to
 navigate to purpose-driven views, and binding to multiple asset browsing elements
 to update whats visible within the view.
 
@@ -147,13 +144,13 @@ And the following `assetItems` are defined:
       }
     ]
 
-If the user selects the 'Alerts' view and uses the context browser to choose
-'San Francisco Bay Area' as a filter for the visible alerts, the URL will
-be changed to the following: "https://example.com/#/dashboards/alerts~/us/calif/bay-area"
+If the user selects the "Alerts" view and uses the context browser to choose
+"San Francisco Bay Area" as a filter for the visible alerts, the URL will
+be changed to the following: "example.com/#/dashboards/alerts~/us/calif/bay-area"
 
 ### Changing the way URLs are built
 
-The URL path produced by `px-app-route` can be bound to two models: the navigation
+The URL path produced by px-app-route can be bound to two models: the navigation
 model (through `navRoute`) and the asset model (through `assetRoute`). Depending
 on the needs of the web app, one or both models can be bound to.
 
@@ -187,7 +184,7 @@ strings in the model route.
 
 When two models are used, the models must be joined together with a character
 to divide the two paths. By default, the models are joined with the '~'
-character. Set the `segment-models-with` attribute on the `px-app-route` element
+character. Set the `segment-models-with` attribute on the px-app-route element
 to a safe, unreserved URI character to change this.
 
 ### Routing with hash
@@ -195,14 +192,14 @@ to a safe, unreserved URI character to change this.
 When the backend application server is not setup to manage routes and send frontend
 routes to a single-page web app index file the hash portion of the URL can be
 used to do routing. To enable hash-based URLs, enable the `use-hash-as-path`
-attribute on both the `px-app-route` element and the `app-location` element that
+attribute on both the px-app-route element and the app-location element that
 produces the route.
 
 ### Integrating px-app-route with other routers
 
 The `encodeAllPaths`, `encodePath`, and `decodePath` methods available on all
-`px-app-route` instances can also be called directly without stamping a
-`px-app-route` element in your app.
+px-app-route instances can also be called directly without stamping a
+px-app-route element in your app.
 
 Those methods are available at `window.PxApp.RouteHelpers.[METHOD_NAME]`.
 Calling these methods directly on the window is a useful way to encode and

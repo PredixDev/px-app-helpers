@@ -2,6 +2,10 @@
   Polymer({
     is: 'px-app-header',
     properties: {
+      /**
+       * By default, the branding bar within the app header container will minimize as the user scrolls away.
+       * If this property is set, the branding bar will stay fixed as the user scrolls away.
+       */
       fixed:{
         type: Boolean,
         value: false,
