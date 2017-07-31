@@ -1,3 +1,8 @@
+v1.1.2
+==================
+* Fix bug in selectable > _updateSelectedRoute; made if check handle arrays
+* Fix graph build to pass dynamic childkey down
+
 v1.1.1
 ==================
 * Update demos

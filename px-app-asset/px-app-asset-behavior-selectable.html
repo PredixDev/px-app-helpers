@@ -367,8 +367,13 @@
         }
       },
 
+      _checkIfEmpty(item) {
+        if(Array.isArray(item)) return !!item.length;
+        return !!item;
+      },
+
       _updateSelectedRoute(selected) {
-        if (selected) {
+        if (this._checkIfEmpty(selected)) {
           if (!this._assetGraph.hasNode(selected)) {
             throw new Error(`The following item could not be found in the items graph:
               ${JSON.stringify(selected)}`);

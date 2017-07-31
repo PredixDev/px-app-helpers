@@ -349,7 +349,7 @@
         info.isExhausted = children[i].hasOwnProperty('isExhausted') ? children[i].isExhausted : null;
         this._tree.appendChild(parent, children[i]);
         if (isRecursive && typeof children[i][childKey] === 'object' && Array.isArray(children[i][childKey]) && children[i][childKey].length) {
-          this.addChildren(children[i], children[i][childKey], { recursive: true });
+          this.addChildren(children[i], children[i][childKey], { recursive: true, childrenKey: childKey });
         }
       }
 
