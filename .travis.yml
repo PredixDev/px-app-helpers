@@ -1,4 +1,4 @@
-sudo: required
+sudo: false
 dist: trusty
 language: node_js
 node_js:
@@ -14,20 +14,16 @@ addons:
     packages:
     - google-chrome-stable
 before_script:
-- yarn add web-component-tester@^6.0.0
-- yarn add bower
 - export PATH=$PWD/node_modules/.bin:$PATH
-- bower install
+- ./node_modules/.bin/bower install
 script:
-- xvfb-run wct --skip-plugin sauce
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct --plugin sauce --skip-plugin
-  local; fi
+- xvfb-run ./node_modules/.bin/wct --root $TRAVIS_BUILD_DIR --skip-plugin sauce
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then ./node_modules/.bin/wct --root
+  $TRAVIS_BUILD_DIR --plugin sauce --skip-plugin local; fi
 after_success:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -k "$DEPLOYSECRET"
   -in deploy.enc -out deploy_key -d; fi
-- cd $TRAVIS_BUILD_DIR/scripts
-- chmod 755 ghp.sh
-- ./ghp.sh
+- ./scripts/ghp.sh
 env:
   global:
   - secure: lKsAF30Oot4of/oCR6l9Cmv0HV6R44PKM72tIlAbuhfiHEucui/pJDDUdT4Fefe5IuKn6tCtYjW4O+H980HoPqJEbSlOiZeMKvE/CX128Q0uWpUOT3SgIbZY7oLb2Pgtvk3D81dGd3Pt9gc9MEUyfjLzU17jtUHxylrJQcCjoeJz7/uF3pNAUxEdYnKJ2fGo7eMW4DughNRUX7zSDcHgOIkZGnqK6GwPc6h9J2OXxsJC+SiuYHrPClE4cBxHdeNkAcMzETiJ7ZQYe3Pz21oVaXkbJYj+gSW1TQqEVYUOxPYwGlknkZJu17LBVkYLdDBqOzsMwKs/lTDJa7HRWg/5hDytW2YPK1pNOENs8/6Szew6Sf7mJhBy5UYoCp6A7p9WT4RkNekYrD3CZQ5UDcI3s8pVQ3ggbpJqEeZKwcWuLoN3TNvyN0pHCyrEfqNc/J2mTPrDA6sAzO64DyTBfRScZ/957wanyVyoiFc7l3NQEU/g3jcW61I1HIdBpiRhhuvUqJQGvfKOHiyEum5Vfi+hKRJ9h8xMHem4LAGCkIfyqUCDRaYeMq06FrujdOYWkwf5TNOHFvLKftb2QbUl1z9+7NjER/znjlc5DaYKwK38MeYpS/rgzTRqriuv32B+g/s9quGk8Ih6k2cd2UraucYhNLwOPW+oYpLsV3n/GuuMclU=

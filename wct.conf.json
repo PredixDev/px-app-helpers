@@ -24,12 +24,16 @@
         {
           "browserName": "safari",
           "platform": "OS X 10.11",
-          "version": "10"
+          "version": "9"
         },
         {
           "browserName": "safari",
-          "platform": "OS X 10.11",
-          "version": "9"
+          "platform": "OS X 10.10",
+          "version": "8"
+        },
+        {
+          "browserName": "firefox",
+          "platform": "OS X 10.11"
         }
       ]
     }
@@ -37,5 +41,4 @@
   "suites": [
     "test/px-app-asset-selectable-fixture.html"
   ]
-
 }
