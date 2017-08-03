@@ -1,3 +1,7 @@
+v1.1.3
+==================
+* update demo to use unique name
+
 v1.1.2
 ==================
 * Fix bug in selectable > _updateSelectedRoute; made if check handle arrays
