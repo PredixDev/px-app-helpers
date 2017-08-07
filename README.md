@@ -1,8 +1,10 @@
-#px-app-helpers
+# px-app-helpers
 
 ## Overview
 
-px-app-helpers is a Predix UI component
+px-app-helpers is a repository containing components and behaviors that are useful for creating an application using Predix UI. The app-header component
+provides a container and scroll behavior for pinning a navigation and branding bar to the top of an application. The asset graph, activatable, and selectable
+behaviors all help to create and interact with an asset model within an application, and is used by the context browser, tree, and breadcrumbs components.
 
 ## Usage
 
@@ -22,16 +24,31 @@ First, install the component via bower on the command line.
 bower install px-app-helpers --save
 ```
 
-Second, import the component to your application with the following tag in your head.
+Second, import any of the included components to your application with one of the following tags in your head.
 
 ```
-<link rel="import" href="/bower_components/px-app-helpers/px-app-helpers.html"/>
+<link rel="import" href="/bower_components/px-app-helpers/px-app-header/px-app-header.html"/>
+<link rel="import" href="/bower_components/px-app-helpers/px-app-asset/px-app-asset-behavior-selectable.html"/>
+<link rel="import" href="/bower_components/px-app-helpers/px-app-asset/px-app-asset-behavior-activatable.html"/>
+<link rel="import" href="/bower_components/px-app-helpers/px-app-asset/px-app-asset-behavior-graph.html"/>
 ```
 
-Finally, use the component in your application:
+Finally, use the components in your application:
 
 ```
-Insert Your demo code here.
+<px-app-header>
+  <px-app-nav slot="app-nav" items="..."></px-app-nav>
+</px-app-header>
+```
+
+and/or:
+
+```
+behaviors: [
+  PxAppBehavior.AssetGraph,
+  PxAppBehavior.AssetSelectable,
+  PxAppBehavior.AssetActivatable
+],
 ```
 
 <br />

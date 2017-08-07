@@ -1,3 +1,8 @@
+v1.1.4
+==================
+* remove index-dark-theme
+* update README
+
 v1.1.3
 ==================
 * update demo to use unique name
