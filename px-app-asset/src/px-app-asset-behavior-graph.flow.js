@@ -105,11 +105,15 @@
             'icon' : 'icon'
           }
         }
+      },
+
+      __rootItems: {
+        type: Array
       }
     },
 
     observers: [
-      '_handleAssetsChanged(items, items.*, keys, keys.*)'
+      '_handleAssetReferenceChanged(items, keys)'
     ],
 
     created() {
@@ -117,21 +121,91 @@
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 
-    _handleAssetsChanged(items: Array<Object>, itemsRef: Object, keys: { id?: string, label?: string, children?: string, route?: string }, keysRef: Object): AssetGraph | typeof undefined {
-      if (this._assetGraph === null && typeof items === 'object' && Array.isArray(items)) {
-        this._assetGraph = this._createAssetGraph();
-        this._assetGraph.addChildren(null, items, {
-          recursive: true,
-          childrenKey: this.keys.children
-        });
-        this.fire('px-app-asset-graph-created', {graph:this._assetGraph});
-        return this._assetGraph;
+    _handleAssetReferenceChanged: function(items: Array<Object>, keys: { id?: string, label?: string, children?: string, route?: string }) {
+      if (this._assetGraph !== null && items && Array.isArray(items)) {
+        // The items were re-assigned to a new object, re-build the asset graph
+        // and dump all the previous data and state
+        if (typeof this.activate === 'function') {
+          this.activate(null);
+        }
+        if (typeof this.select === 'function') {
+          this.select(null);
+        }
+      }
+
+      this._assetGraph = this._createAssetGraph();
+      this._assetGraph.addChildren(null, items, {
+        recursive: true,
+        childrenKey: this.keys.children
+      });
+      this.__rootItems = items.slice(0);
+      this.fire('px-app-asset-graph-created', {graph:this._assetGraph});
+      return this._assetGraph;
+    },
+
+    /**
+     * Adds a child or children to the requested node. Pass a single object
+     * to add one child, or an array of objects to add multiple children.
+     *
+     * The `node` should be a direct reference to one of the objects already
+     * in the asset graph (e.g. one of the `items` objects or another node
+     * added through the `addChildren` API). To remove children from the root
+     * of the graph, call with `node` as null.
+     *
+     * @param  {Object|null} node
+     * @param  {Object|Array<Object>} children
+     */
+    addChildren(node, children, options) {
+      if (this._assetGraph !== null) {
+        this._assetGraph.addChildren(node, children, options);
+        if (node === null) {
+          let childrenArray = Array.isArray(children) ? children : [children];
+          this.__rootItems = this.__rootItems.concat(childrenArray)
+        }
+        this.fire('px-app-asset-children-updated', (node === null) ? {item:null, added:children, children:this.__rootItems} : Object.assign({}, this._assetGraph.getInfo(node), {added:children}));
       }
     },
 
-    addChildren(node, children, options) {
-      this._assetGraph.addChildren(node, children, options);
-      this.fire('px-app-asset-children-updated', this._assetGraph.getInfo(node));
+    /**
+     * Removes a child or children from the requested node. Pass `children` a
+     * single object to remove one child, an array of objects to remove multiple
+     * children, or null to remove all children.
+     *
+     * The `node` should be a direct reference to one of the objects already
+     * in the asset graph (e.g. one of the `items` objects or another node
+     * added through the `addChildren` API). To add children to the root
+     * of the graph, call with `node` as null.
+     *
+     * @param  {Object|null} node
+     * @param  {Object|Array<Object>} children
+     */
+    removeChildren(node, children, options) {
+      if (this._assetGraph !== null) {
+        const childrenArray = Array.isArray(children) ? children : [children];
+
+        if (typeof this.activate === 'function' || typeof this.select === 'function') {
+          // Deactivate or deselect if the active/selected items are in the path
+          // of one of the removed items
+          let deactivated;
+          let deselected;
+          for (let i=0; i<childrenArray.length; i++) {
+            if (!deactivated && typeof this.activate === 'function' && this.activeMeta && (this.activeMeta.item === childrenArray[i] || (this.activeMeta.path && this.activeMeta.path.indexOf(childrenArray[i]) > -1))) {
+              this.activate(null);
+              deactivated = true;
+            }
+            if (!deselected && typeof this.select === 'function' && this.selectedMeta && (this.selectedMeta.item === childrenArray[i] || (this.selectedMeta.path && this.selectedMeta.path.indexOf(childrenArray[i]) > -1))) {
+              this.select(null);
+              deactivated = true;
+            }
+          }
+        }
+
+        this._assetGraph.removeChildren(node, children, options);
+        if (node === null) {
+          this.__rootItems = this.__rootItems.filter(item => childrenArray.indexOf(item) === -1);
+        }
+        this.fire('px-app-asset-children-updated', (node === null) ? {item:null, removed:children, children:this.__rootItems} : Object.assign({}, this._assetGraph.getInfo(node), {removed:children}));
+      }
     }
   };
   PxAppBehavior.AssetGraph = AssetGraphBehavior;
@@ -352,6 +426,20 @@
     }
 
     /**
+     * Returns a reference to the root node's children. The returned array will
+     * be empty if no children are defined.
+     *
+     * @return {Array<Object>|null}
+     */
+    getRootChildren(): Array<Object> | null {
+      const _node = this._rootNode;
+      if (_node) {
+        return this._tree.childrenToArray(_node);
+      }
+      return null;
+    }
+
+    /**
      * Checks if the node has any children.
      *
      * @param  {Object} node
@@ -390,13 +478,13 @@
         ? options.childrenKey : this._defaultKeys.children;
       const isRecursive = (typeof options === 'object' && typeof options.recursive === 'boolean')
         ? options.recursive : false;
-      for (let i=0; i<children.length; i++) {
-        const info = this._node(children[i]);
-        info.isTerminal = children[i].hasOwnProperty('isTerminal') ? children[i].isTerminal : null;
-        info.isExhausted = children[i].hasOwnProperty('isExhausted') ? children[i].isExhausted : null;
-        this._tree.appendChild(parent, children[i]);
-        if (isRecursive && typeof children[i][childKey] === 'object' && Array.isArray(children[i][childKey]) && children[i][childKey].length) {
-          this.addChildren(children[i], children[i][childKey], { recursive: true });
+      for (let i=0; i<childArray.length; i++) {
+        const info = this._node(childArray[i]);
+        info.isTerminal = childArray[i].hasOwnProperty('isTerminal') ? childArray[i].isTerminal : null;
+        info.isExhausted = childArray[i].hasOwnProperty('isExhausted') ? childArray[i].isExhausted : null;
+        this._tree.appendChild(parent, childArray[i]);
+        if (isRecursive && typeof childArray[i][childKey] === 'object' && Array.isArray(childArray[i][childKey]) && childArray[i][childKey].length) {
+          this.addChildren(childArray[i], childArray[i][childKey], { recursive: true });
         }
       }
 
@@ -419,9 +507,27 @@
      * @param  {Object|Array<Object>} children
      * @return {Array<Object>|undefined} the updated child array of the node
      */
-    // removeChildren(node: Object | null, children?: Object | Array<Object>, options?: { isExhausted: boolean }): Array<Object> | typeof undefined {
-    //
-    // }
+    removeChildren(node: Object | null, children?: Object | Array<Object>, options?: { isExhausted: boolean }): Array<Object> | typeof undefined {
+      if (typeof children !== 'object' || (Array.isArray(children) && !children.length)) {
+        throw new Error('A child object or array of child objects is required.');
+      }
+
+      if (node !== null && typeof node === 'object' && !this.hasNode(node)) {
+        throw new Error('The parent node must be a node in the graph or null.')
+      }
+
+      const parent = (node !== null) ? node : this._rootNode;
+      const childArray = Array.isArray(children) ? children : [children];
+      for (let i=0; i<childArray.length; i++) {
+        if (!this.hasNode(childArray[i])) {
+          throw new Error('Child node(s) cannot be removed from the graph if it they were never added');
+        }
+        if ((node !== null && this.getParent(childArray[i]) !== parent) || (node == null && this.getParent(childArray[i]) !== null)) {
+          throw new Error('Child node(s) passed to "removeChildren" method must be children of the given parent');
+        }
+        this._tree.remove(childArray[i]);
+      }
+    }
 
     isExhausted(node: Object | null): boolean | null {
       const _node = (node === null) ? this._rootNode : node;
