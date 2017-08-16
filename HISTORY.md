@@ -1,3 +1,7 @@
+v1.2.1
+===================
+* Fix API source path for demos
+
 v1.2.0
 ==================
 px-app-asset changes:
