@@ -249,5 +249,86 @@ function runCustomTests() {
         expect(fx.active).to.equal(null);
       });
     });
+
+    describe('[custom keys]', function() {
+      var dataCustomKeys;
+      var customKeys;
+
+      beforeEach(function() {
+        fx = fixture('AssetGraphFixture');
+        dataCustomKeys = [
+          { name: 'Home', assetId: 'h01', assets: [
+            { name: 'Child 1', assetId: 'c01', assets: [{name: 'Subchild 1', assetId: 'cs01'}] },
+            { name: 'Child 2', assetId: 'c02' },
+            { name: 'Child 3', assetId: 'c03' }
+          ] },
+          { name: 'Dashboards', assetId: 'd01' }
+        ];
+        customKeys = {
+          id: 'assetId',
+          label: 'name',
+          children: 'assets'
+        };
+        sandbox = sinon.sandbox.create();
+      });
+
+      afterEach(function() {
+        sandbox.restore();
+      });
+
+      it('finds all children when a custom `children` key is used', function() {
+        fx.keys = customKeys;
+        fx.items = dataCustomKeys;
+        expect(fx._assetGraph.getChildren(fx.items[0]).length).to.equal(3);
+        expect(fx._assetGraph.hasNode(fx.items[0].assets[0])).to.equal(true);
+        expect(fx._assetGraph.getChildren(fx.items[0].assets[0]).length).to.equal(1);
+        expect(fx._assetGraph.hasNode(fx.items[0].assets[0].assets[0])).to.equal(true);
+      });
+
+      it('builds a new asset graph when `keys` is reassigned to a new reference', function() {
+        fx.items = dataCustomKeys;
+        var graph = fx._assetGraph;
+        fx.keys = customKeys;
+        expect(fx._assetGraph === graph).to.equal(false);
+      });
+
+      it('builds a new asset graph when the `keys.children` is changed', function() {
+        fx.items = dataCustomKeys;
+        var graph = fx._assetGraph;
+        fx.set('keys.children', 'assets');
+        expect(fx._assetGraph === graph).to.equal(false);
+      });
+
+      it('resets the active item when `keys` is reassigned to a new reference', function() {
+        fx.items = dataCustomKeys;
+        var activateFn = sandbox.spy();
+        fx.activate = activateFn;
+        fx.keys = customKeys;
+        expect(activateFn).to.have.been.calledOnce;
+        expect(activateFn).to.have.been.calledWith(null);
+      });
+
+      it('resets the selected item when `keys` is reassigned to a new reference', function() {
+        fx.items = dataCustomKeys;
+        var selectFn = sandbox.spy();
+        fx.select = selectFn;
+        fx.keys = customKeys;
+        expect(selectFn).to.have.been.calledOnce;
+        expect(selectFn).to.have.been.calledWith(null);
+      });
+
+      it('resets the active and selected item when `keys.children` is changed', function() {
+        fx.items = dataCustomKeys;
+        var selectFn = sandbox.spy();
+        var activateFn = sandbox.spy();
+        fx.select = selectFn;
+        fx.activate = activateFn;
+        fx.set('keys.children', 'assets');
+        expect(selectFn).to.have.been.calledOnce;
+        expect(selectFn).to.have.been.calledWith(null);
+        expect(activateFn).to.have.been.calledOnce;
+        expect(activateFn).to.have.been.calledWith(null);
+      });
+    });
   });
 }

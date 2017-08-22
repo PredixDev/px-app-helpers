@@ -253,14 +253,14 @@
 
       _getSelectedMeta(selected) {
         if (selected.base && !Array.isArray(selected.base) && this._assetGraph && this._assetGraph.hasNode(selected.base)) {
-          const {path, route, parent, children, siblings} = this._assetGraph.getInfo(selected.base);
+          const {path, route, parent, children, siblings} = this._assetGraph.getInfo(selected.base, this.keys.id);
           return {
             item: selected.base, path, route, parent, children, siblings
           };
         }
         if (selected.base && Array.isArray(selected.base) && selected.base.length) {
           return selected.base.map(item => {
-            const {path, route, parent, children, siblings} = this._assetGraph.getInfo(item);
+            const {path, route, parent, children, siblings} = this._assetGraph.getInfo(item, this.keys.id);
             return {
               item, path, route, parent, children, siblings
             };
@@ -380,7 +380,7 @@
             return;
           }
 
-          const route = this._assetGraph.getRoute(selected);
+          const route = this._assetGraph.getRoute(selected, this.keys.id);
           if (this._routeIsDifferent(route, this.selectedRoute)) {
             this._squashSelectedRouteChange = true;
             this.selectedRoute = route;
@@ -403,7 +403,7 @@
                 ${JSON.stringify(item)}`);
             }
 
-            return this._assetGraph.getRoute(item);
+            return this._assetGraph.getRoute(item, this.keys.id);
           });
           this._squashSelectedRouteChange = false;
         } else {
@@ -438,7 +438,7 @@
       },
 
       _selectAsset(item, source) {
-        const {route, path} = this._assetGraph.getInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item, this.keys.id);
         this._lastSelection = {
           item: item,
           source: source,
@@ -476,7 +476,7 @@
        */
 
       _deselectAsset(item, source) {
-        const {route, path} = this._assetGraph.getInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item, this.keys.id);
         this._lastSelection = {
           item: null,
           source: null,

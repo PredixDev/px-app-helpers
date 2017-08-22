@@ -86,7 +86,6 @@
             'id': 'id',
             'label': 'label',
             'children': 'children',
-            'route': 'route',
             'icon': 'icon'
           };
         }
@@ -97,15 +96,45 @@
       }
     },
 
-    observers: ['_handleAssetReferenceChanged(items, keys)'],
+    observers: ['__handleAssetReferenceChanged(items, keys)', '__handleKeyUpdated(keys.*)'],
 
     created() {
       this._assetGraph = null;
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 
-    _handleAssetReferenceChanged: function (items, keys) {
-      if (this._assetGraph !== null && items && Array.isArray(items)) {
+    __handleAssetReferenceChanged: function (items, keys) {
+      if (typeof items === 'object' && Array.isArray(items)) {
+        if (this._assetGraph !== null) {
+          // The items were re-assigned to a new object, re-build the asset graph
+          // and dump all the previous data and state
+          if (typeof this.activate === 'function') {
+            this.activate(null);
+          }
+          if (typeof this.select === 'function') {
+            this.select(null);
+          }
+        }
+
+        this._assetGraph = this._createAssetGraph();
+        this._assetGraph.addChildren(null, items, {
+          recursive: true,
+          childrenKey: keys.children
+        });
+        this.__rootItems = items.slice(0);
+        this.fire('px-app-asset-graph-created', { graph: this._assetGraph });
+        return this._assetGraph;
+      }
+    },
+
+    __handleKeyUpdated: function (record) {
+      if (!this._assetGraph) {
+        return;
+      }
+      if (record.path === 'keys.children') {
+        this.__handleAssetReferenceChanged(this.items, this.keys);
+      }
+      if (record.path === 'keys.id') {
         // The items were re-assigned to a new object, re-build the asset graph
         // and dump all the previous data and state
         if (typeof this.activate === 'function') {
@@ -115,15 +144,6 @@
           this.select(null);
         }
       }
-
-      this._assetGraph = this._createAssetGraph();
-      this._assetGraph.addChildren(null, items, {
-        recursive: true,
-        childrenKey: this.keys.children
-      });
-      this.__rootItems = items.slice(0);
-      this.fire('px-app-asset-graph-created', { graph: this._assetGraph });
-      return this._assetGraph;
     },
 
     /**
@@ -140,7 +160,10 @@
      */
     addChildren(node, children, options) {
       if (this._assetGraph !== null) {
-        this._assetGraph.addChildren(node, children, options);
+        this._assetGraph.addChildren(node, children, Object.assign({}, {
+          recursive: true,
+          childrenKey: this.keys.children
+        }, options || {}));
         if (node === null) {
           let childrenArray = Array.isArray(children) ? children : [children];
           this.__rootItems = this.__rootItems.concat(childrenArray);
@@ -437,7 +460,7 @@
         info.isExhausted = childArray[i].hasOwnProperty('isExhausted') ? childArray[i].isExhausted : null;
         this._tree.appendChild(parent, childArray[i]);
         if (isRecursive && typeof childArray[i][childKey] === 'object' && Array.isArray(childArray[i][childKey]) && childArray[i][childKey].length) {
-          this.addChildren(childArray[i], childArray[i][childKey], { recursive: true });
+          this.addChildren(childArray[i], childArray[i][childKey], { recursive: true, childrenKey: childKey });
         }
       }
 

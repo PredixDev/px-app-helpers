@@ -215,14 +215,14 @@
 
       _getActiveMeta(active) {
         if (active.base && !Array.isArray(active.base) && this._assetGraph && this._assetGraph.hasNode(active.base)) {
-          const {path, route, parent, children, siblings} = this._assetGraph.getInfo(active.base);
+          const {path, route, parent, children, siblings} = this._assetGraph.getInfo(active.base, this.keys.id);
           return {
             item: active.base, path, route, parent, children, siblings
           };
         }
         if (active.base && Array.isArray(active.base) && active.base.length) {
           return active.base.map(item => {
-            const {path, route, parent, children, siblings} = this._assetGraph.getInfo(item);
+            const {path, route, parent, children, siblings} = this._assetGraph.getInfo(item, this.keys.id);
             return {
               item, path, route, parent, children, siblings
             };
@@ -329,7 +329,7 @@
             return;
           }
 
-          const route = this._assetGraph.getRoute(active);
+          const route = this._assetGraph.getRoute(active, this.keys.id);
           if (this._routeIsDifferent(route, this.activeRoute)) {
             this._squashActiveRouteChange = true;
             this.activeRoute = route;
@@ -352,7 +352,7 @@
                 ${JSON.stringify(item)}`);
             }
 
-            return this._assetGraph.getRoute(item);
+            return this._assetGraph.getRoute(item, this.keys.id);
           });
           this._squashActiveRouteChange = false;
         } else {
@@ -363,7 +363,7 @@
       },
 
       _activateAsset(item, source) {
-        const {route, path} = this._assetGraph.getInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item, this.keys.id);
         this._lastActivation = {
           item: item,
           source: source,
@@ -400,7 +400,7 @@
        */
 
       _deactivateAsset(item, source) {
-        const {route, path} = this._assetGraph.getInfo(item);
+        const {route, path} = this._assetGraph.getInfo(item, this.keys.id);
         this._lastActivation = {
           item: null,
           source: null,
