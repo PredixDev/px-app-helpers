@@ -1,3 +1,12 @@
+v1.2.2
+===================
+px-app-asset changes:
+* Makes key changes dynamic
+* Resets asset graph when keys reference changes
+* Resets asset graph when keys.children changes
+* Deselects/deactivates when keys or keys.id changes
+* Adds tests to cover 
+
 v1.2.1
 ===================
 * Fix API source path for demos
