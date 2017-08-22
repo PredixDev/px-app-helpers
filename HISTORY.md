@@ -1,3 +1,8 @@
+v1.3.0
+===================
+* Adds Object.assign polyfill in a seperate folder for use in multiple
+  components
+
 v1.2.2
 ===================
 px-app-asset changes:
