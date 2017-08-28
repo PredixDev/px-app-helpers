@@ -91,6 +91,10 @@
         }
       },
 
+      _assetGraph: {
+        type: Object,
+        value: null
+      },
       __rootItems: {
         type: Array
       }
@@ -99,7 +103,6 @@
     observers: ['__handleAssetReferenceChanged(items, keys)', '__handleKeyUpdated(keys.*)'],
 
     created() {
-      this._assetGraph = null;
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 

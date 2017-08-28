@@ -106,6 +106,10 @@
         }
       },
 
+      _assetGraph: {
+        type: Object,
+        value: null
+      },
       __rootItems: {
         type: Array
       }
@@ -117,7 +121,6 @@
     ],
 
     created() {
-      this._assetGraph = null;
       this._createAssetGraph = PxApp.assetGraph.bind(this);
     },
 
