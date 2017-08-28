@@ -1,3 +1,9 @@
+v1.3.1
+===================
+px-app-asset changes:
+* Add `_assetGraph` to property so it causes property effects in template
+  data binding
+
 v1.3.0
 ===================
 * Adds Object.assign polyfill in a seperate folder for use in multiple
