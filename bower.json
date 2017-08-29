@@ -35,7 +35,6 @@
   "devDependencies": {
     "px-demo": "^2.0.0",
     "px-card": "^1.0.0",
-    "web-component-tester": "^6.0.0",
     "px-box-sizing-design": "^1.0.0",
     "px-normalize-design": "^1.0.0",
     "web-component-tester": "^6.0.0"
