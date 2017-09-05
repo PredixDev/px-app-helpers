@@ -1,3 +1,7 @@
+v1.3.2
+===================
+* update px-app-header docs
+
 v1.3.1
 ===================
 px-app-asset changes:
@@ -16,7 +20,7 @@ px-app-asset changes:
 * Resets asset graph when keys reference changes
 * Resets asset graph when keys.children changes
 * Deselects/deactivates when keys or keys.id changes
-* Adds tests to cover 
+* Adds tests to cover
 
 v1.2.1
 ===================

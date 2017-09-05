@@ -21,6 +21,14 @@
       <px-app-nav slot="app-nav" items="..."></px-app-nav>
     </px-app-header>
 
+The default configuration will contain a px-branding-bar that will inherit the `title` attribute from your application.
+To override the title, use the branding-bar slot instead:
+
+    <px-app-header>
+      <px-branding-bar slot="branding-bar" application-title="..."></px-branding-bar>
+      <px-app-nav slot="app-nav" items="..."></px-app-nav>
+    </px-app-header>
+
 @element px-app-header
 @blurb A component combining a branding bar element and nav element header with scroll region & effect.
 @homepage index.html
