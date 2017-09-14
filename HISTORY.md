@@ -1,3 +1,7 @@
+v1.3.3
+===================
+* fix up demo height for px-app-header.
+
 v1.3.2
 ===================
 * update px-app-header docs
