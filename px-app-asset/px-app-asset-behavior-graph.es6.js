@@ -25,7 +25,7 @@
        * All items should have at least the following properties:
        *
        * - {String} id - A unique string that identifies the item. Should only
-       * contain valid ASCII characters. Its recommended to only use URI-safe
+       * contain valid ASCII characters. It's recommended to only use URI-safe
        * characters to allow for easy binding to the URL. Examples: 'home' or 'alerts'
        * - {String} label - A short, human-readable text label for the item.
        *
@@ -59,7 +59,7 @@
        *
        * Use this property if you already have a predefined data schema for your
        * application and want to customize this component to match your schema.
-       * Otherwise, its recommended to leave the defaults.
+       * Otherwise, it's recommended to leave the defaults.
        *
        * The following properties can be set:
        *

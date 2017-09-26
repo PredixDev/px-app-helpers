@@ -70,7 +70,7 @@
          *
          * The route array starts at the top of the graph and ends with the selected
          * item. Each route entry is a string that corresponds to the unique ID
-         * of an item. The item property this unique ID will be taken from can be
+         * of an item. The item property that this unique ID will be taken from can be
          * configured with the `key` property. By default, it will be `item.id`.
          *
          *
@@ -219,8 +219,8 @@
       },
 
       /**
-       * Deselects an item. Call with an object that. Call with a direct reference
-       * to the selected item or with `null` to deselect whatever is selected.
+       * Deselects an item. Call with a direct reference to the selected item
+       * or with `null` to deselect whatever is selected.
        *
        * If multi-select mode is enabled, call with a direct reference to one of
        * the selected items to deselect it, or an array of selected items to
@@ -272,7 +272,7 @@
       },
 
       /**
-       * The event `detail.item` should be a reference an item in the asset graph.
+       * The event `detail.item` should be a reference to an item in the asset graph.
        */
       _assetSelectedByEvent(evt) {
         evt.stopPropagation();
@@ -282,7 +282,7 @@
       },
 
       /**
-       * The event `detail.item` should be a reference an item in the asset graph.
+       * The event `detail.item` should be a reference to an item in the asset graph.
        */
       _assetDeselectedByEvent(evt) {
         evt.stopPropagation();
