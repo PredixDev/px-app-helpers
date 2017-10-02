@@ -34,6 +34,13 @@
        * - {Array} children - An array of subitem objects that are children of
        * the item. Each child item should also have an `id` and `label`, and
        * may have its own child items.
+       * - {Boolean=false} isTerminal - If `true` the item cannot have any children.
+       * Terminal items can only be selected, not activated (navigated into).
+       * Items with children should not be marked as terminal.
+       * - {Boolean=false} isExhausted - If `true` the item does not have any
+       * additional children available to load from a remote data source.
+       * - {Boolean=true} isSelectable - If `false` the item can only be activated
+       * (navigated into) to view its children, not selected.
        *
        * The following is an example of a list of valid nav items:
        *
@@ -243,7 +250,7 @@
       if (node) {
         return node;
       } else {
-        return object[this._symbol] = { isExhausted: null, isTerminal: null };
+        return object[this._symbol] = { isExhausted: null, isTerminal: null, isSelectable: null };
       }
     }
 
@@ -275,6 +282,7 @@
         const hasChildren = typeof children === 'object' && Array.isArray(children) && children.length > 0;
         const isTerminal = this.isTerminal(node);
         const isExhausted = this.isExhausted(node);
+        const isSelectable = this.isSelectable(node);
 
         return {
           item: node,
@@ -285,7 +293,8 @@
           children: children,
           hasChildren: hasChildren,
           isTerminal: isTerminal,
-          isExhausted: isExhausted
+          isExhausted: isExhausted,
+          isSelectable: isSelectable
         };
       }
       return null;
@@ -461,6 +470,7 @@
         const info = this._node(childArray[i]);
         info.isTerminal = childArray[i].hasOwnProperty('isTerminal') ? childArray[i].isTerminal : null;
         info.isExhausted = childArray[i].hasOwnProperty('isExhausted') ? childArray[i].isExhausted : null;
+        info.isSelectable = childArray[i].hasOwnProperty('isSelectable') ? childArray[i].isSelectable : null;
         this._tree.appendChild(parent, childArray[i]);
         if (isRecursive && typeof childArray[i][childKey] === 'object' && Array.isArray(childArray[i][childKey]) && childArray[i][childKey].length) {
           this.addChildren(childArray[i], childArray[i][childKey], { recursive: true, childrenKey: childKey });
@@ -471,6 +481,12 @@
         const isExhausted = options.isExhausted;
         const info = this._node(parent);
         info.isExhausted = isExhausted;
+      }
+
+      if (typeof options === 'object' && typeof options.isSelectable === 'boolean') {
+        const isSelectable = options.isSelectable;
+        const info = this._node(parent);
+        info.isSelectable = isSelectable;
       }
 
       return this.getChildren(parent);
@@ -548,6 +564,31 @@
         const info = this._node(node);
         info.isTerminal = isTerminal;
         return isTerminal;
+      }
+      return null;
+    }
+
+    isSelectable(node) {
+      const _node = node === null ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        const info = this._node(_node);
+        // isSelectable defaults to `true`, if a node was not explicitly
+        // marked `isSelectable:false` then it is selectable
+        if (info && info.isSelectable === false) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+      return null;
+    }
+
+    setSelectable(node, isSelectable) {
+      const _node = node === null ? this._rootNode : node;
+      if (_node && (_node.ROOT || this._tree.index(_node) > -1)) {
+        const info = this._node(_node);
+        info.isSelectable = isSelectable;
+        return isSelectable;
       }
       return null;
     }
