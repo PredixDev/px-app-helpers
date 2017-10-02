@@ -1,3 +1,9 @@
+v1.4.0
+===================
+px-app-asset changes:
+* Adds `isSelectable` configuration for items. Defaults to `true`.  If `false`
+  the item can only be activated to view its children, not selected.
+
 v1.3.4
 ===================
 * fix typos in documentation
