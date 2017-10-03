@@ -1,3 +1,7 @@
+v1.4.1
+===================
+* Add babel helpers to px-app-header demo file as loaded via iframe in predix-ui.com site
+
 v1.4.0
 ===================
 px-app-asset changes:
