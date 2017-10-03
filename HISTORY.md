@@ -1,3 +1,7 @@
+v1.4.2
+===================
+* Fix background colour of demo navbar.
+
 v1.4.1
 ===================
 * Add babel helpers to px-app-header demo file as loaded via iframe in predix-ui.com site
