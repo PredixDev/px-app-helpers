@@ -75,8 +75,9 @@
         /**
          * [Read-only] Helpful metadata about the favorited item.
          *
-         * SINGLE-SELECT MODE: An object with the following information about
-         * the favorited item (if no favorited item, all values will be null):
+         * An array of objects with metadata about each favorited item. Each
+         * object will contain the following information about the favorited item
+         * (if no items are favorited, all values will be null):
          *
          * - {Object} `item`: Reference to the favorited item
          * - {Array} `path`: The path to the favorited item as an array. Begins with
@@ -93,9 +94,6 @@
          * the children of its parent) or an array with only the favorited item
          * if it has no children.
          *
-         * MUTLI-SELECT MODE: An array of objects with metadata about each
-         * favorited item. Each object will be contain the same values as above.
-         * If no items are favorited, all values will be null.
          */
         favoritedMeta: {
           type: Object,
@@ -132,11 +130,9 @@
       multiFavorite: true,
 
       /**
-       * Favorites an item. Call with an object that is a direct reference to one
-       * of the `items` objects.
-       *
-       * If multi-favorite mode is enabled, call with an object to favorite a single
-       * item or an array of objects to favorite multiple items.
+       * Call with an object that is a direct reference to one of the `items`
+       * objects to favorite a single item, or with an array of objects to favorite
+       * multiple items.
        *
        * An optional source of the change can be provided as a string.
        *
@@ -169,10 +165,7 @@
       },
 
       /**
-       * Defavorites an item. Call with a direct reference to the favorited item
-       * or with `null` to defavorite whatever is favorited.
-       *
-       * If multi-favorite mode is enabled, call with a direct reference to one of
+       * Defavorites one or more items. Call with a direct reference to one of
        * the favorited items to defavorite it, or an array of favorited items to
        * defavorite multiple, or `null` to defavorite all items.
        *
