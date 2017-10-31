@@ -1,3 +1,7 @@
+v1.4.3
+===================
+* add device flags, fix mobile demo
+
 v1.4.2
 ===================
 * Fix background colour of demo navbar.
