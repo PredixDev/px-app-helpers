@@ -22,7 +22,7 @@
 
 // Component
 
-:host{
+:host>*{
   --app-toolbar-font-size: 15px;
 }
 app-toolbar{
