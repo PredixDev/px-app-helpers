@@ -17,6 +17,8 @@ const rename = require('gulp-rename');
 const sourcemaps = require('gulp-sourcemaps');
 const cache = require('gulp-cached');
 const flow = require('gulp-flowtype');
+const exec = require('child_process').exec;
+const through = require('through2');
 
 const sassOptions = {
   importer: importOnce,
@@ -117,6 +119,14 @@ gulp.task('flow', ['flow:babel'], function() {
   //     beep: true,
   //     abort: false
   //   }));
+});
+
+gulp.task('generate-api', function (cb) {
+  exec(`node_modules/.bin/polymer analyze px-*/px-*.html > px-app-helpers-api.json`, function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
 });
 
 gulp.task('watch', function() {
