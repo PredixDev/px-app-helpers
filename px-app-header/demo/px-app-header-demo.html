@@ -49,7 +49,7 @@
 
       <!-- Component ---------------------------------------------------------->
        <px-demo-component slot="px-demo-component">
-         <iframe id="demoframe" src="../demo.html"></iframe>
+         <iframe id="demoframe" src="[[importPath]]../demo.html"></iframe>
       </px-demo-component>
       <!-- END Component ------------------------------------------------------>
 
@@ -108,11 +108,11 @@
         defaultValue: '<px-app-nav slot="app-nav" items="..."></px-app-nav>'
       }
     },
-     _fixedChanged: function(val){
-      var appHeaderEl = window.frames['demoframe'].contentDocument.querySelector('px-app-header');
+    _fixedChanged: function(val){
+      var appHeaderEl = this.$.demoframe.contentDocument.querySelector('px-app-header');
       if (appHeaderEl){
         appHeaderEl.fixed = val;
       }
-     }
+    }
    });
 </script>

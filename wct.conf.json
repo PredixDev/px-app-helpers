@@ -35,7 +35,6 @@
     }
   },
   "suites": [
-    "test/px-app-asset-graph-fixture.html",
-    "test/px-app-asset-selectable-fixture.html"
+    "test/index.html"
   ]
 }
