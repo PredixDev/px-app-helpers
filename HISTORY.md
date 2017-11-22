@@ -1,3 +1,7 @@
+v2.0.0
+===================
+* Polymer 1.x/2.x hybrid support
+
 v1.4.3
 ===================
 * add device flags, fix mobile demo
