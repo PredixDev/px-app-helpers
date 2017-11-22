@@ -30,6 +30,20 @@
         },
 
         /**
+         * A copy of the favorited items, used to keep track of changes to the
+         * favorited array without changing the favorited array until explicitly
+         * instructed to do so.
+         *
+         */
+        tempFaves: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return [];
+          }
+        },
+
+        /**
          * The route to the favorited item as an array of strings. Use this property
          * to set the favorited item by route, or to bind to updates when the
          * favorited item is changed. Changing this property will automatically
@@ -144,7 +158,7 @@
         if ((!this.multiFavorite && item === null && this._lastFavorite.item !== null) ||
             (this.multiFavorite && item === null && this.favorited.length) ||
             (this.multiFavorite && Array.isArray(item) && !item.length && this.favorited.length)) {
-          this.defavorit(Array.isArray(this.favorited) ? [...this.favorited] : this.favorited);
+          this.defavorite(Array.isArray(this.favorited) ? [...this.favorited] : this.favorited);
           return this.favorited;
         }
         if (!item || (!this.multiFavorite && item === this._lastFavorite.item) || (this.multiFavorite && this.favorited.indexOf(item) > -1)) return this.favorited;
@@ -253,7 +267,7 @@
       _updateFavoritedFromRoute(route) {
         if (this.favorited && (route === null || (Array.isArray(route) && !route.length))) {
           this._squashFavoritedChange = true;
-          this.defavorit(this.favorited, 'ROUTE_CHANGED');
+          this.defavorite(this.favorited, 'ROUTE_CHANGED');
           this._squashFavoritedChange = false;
           return;
         }
@@ -444,7 +458,7 @@
        *   * 'DOM_EVENT' - the user interacted with an item and favorited it
        *   * 'ROUTE_CHANGED' - the array bound to `favoritedRoute` changed
        *   * 'ITEM_CHANGED' - the object bound to `favorited` changed
-       *   * 'METHOD' - the `favorite()` method was called
+       *   * 'METHOD' - the `defavorite()` method was called
        *
        * The event will have the following properties:
        *
