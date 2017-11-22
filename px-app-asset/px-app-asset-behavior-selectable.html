@@ -420,10 +420,10 @@
         else if (!this.multiSelect && !this.selected && this.selectedRoute) {
           this._updateSelectedFromRoute(this.selectedRoute);
         }
-        else if (this.multiSelect && this.selected.length && !this.selectedRoute.length) {
+        else if (this.multiSelect && !!this.selected && this.selected.length && !this.selectedRoute.length) {
           this._updateSelectedRouteMulti(this.selected);
         }
-        else if (this.multiSelect && !this.selected.length && this.selectedRoute.length) {
+        else if (this.multiSelect && !!this.selected && !this.selected.length && this.selectedRoute.length) {
           this._updateSelectedFromRouteMulti(this.selected);
         }
       },
