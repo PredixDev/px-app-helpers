@@ -39,6 +39,49 @@ describe('PxAppBehavior.AssetSelectable', function () {
       ]
     },
   ];
+  var customKeys = {
+    id: 'assetId',
+    label: 'assetName',
+    children: 'assetChildren'
+  };
+  var customKeysData = [
+    {
+      assetName: 'United States',
+      assetId: 'united-states',
+      assetChildren: [
+        {
+          assetName: 'California',
+          assetId: 'calif',
+          assetChildren: [
+            {
+              assetName: 'San Francisco',
+              assetId: 'sf'
+            },
+            {
+              assetName: 'Walnut Creek',
+              assetId: 'wc'
+            },
+            {
+              assetName: 'Sacramento',
+              assetId: 'sc'
+            }
+          ]
+        },
+        {
+          assetName: 'Arizona',
+          assetId: 'ariz'
+        },
+        {
+          assetName: 'Oregon',
+          assetId: 'oregon'
+        },
+        {
+          assetName: 'Washington',
+          assetId: 'wash'
+        }
+      ]
+    },
+  ];
 
   before(function() {
     // Create a stub for the Popup base behavior
@@ -384,6 +427,58 @@ describe('PxAppBehavior.AssetSelectable', function () {
       expect(fx.selectedMeta[1].children).to.eql([]);
       expect(fx.selectedMeta[0].siblings).to.eql(data[0].children);
       expect(fx.selectedMeta[1].siblings).to.eql(data[0].children);
+    });
+  });
+
+  describe('custom keys', function() {
+    describe('[single select]', function() {
+      beforeEach(function() {
+        fx = fixture('AssetSelectableFixture');
+        fx.multiSelect = false;
+        fx.keys = customKeys
+        fx.items = customKeysData;
+      });
+
+      it('selects an item by route when `selectedRoute` changes', function() {
+        var item = customKeysData[0].assetChildren[0].assetChildren[0];
+        fx.selectedRoute = ['united-states', 'calif', 'sf'];
+        expect(fx.selected).to.equal(item);
+      });
+
+      it('updates the `selectedRoute` when an item is selected', function() {
+        var item = customKeysData[0].assetChildren[0].assetChildren[1];
+        fx.select(item);
+        expect(fx.selectedRoute).to.eql(['united-states', 'calif', 'wc']);
+      });
+    });
+    describe('[multi select]', function() {
+      beforeEach(function() {
+        fx = fixture('AssetSelectableFixture');
+        fx.multiSelect = true;
+        fx.keys = customKeys
+        fx.items = customKeysData;
+      });
+
+      it('adds a `selected` item when the `selectedRoute` array changes', function() {
+        var item1 = customKeysData[0].assetChildren[0];
+        var item1Route = ['united-states','calif'];
+        var item2 = customKeysData[0].assetChildren[1];
+        var item2Route = ['united-states','ariz'];
+        fx.selectedRoute = [item1Route, item2Route];
+        expect(fx.selected.length).to.equal(2);
+        expect(fx.selected[0]).to.eql(item1);
+        expect(fx.selected[1]).to.eql(item2);
+      });
+
+      it('adds a newly selected item\'s route to the `selectedRoute` array', function() {
+        var item1 = customKeysData[0].assetChildren[0];
+        var item2 = customKeysData[0].assetChildren[1];
+        fx.select(item1);
+        fx.select(item2);
+        expect(fx.selectedRoute.length).to.equal(2);
+        expect(fx.selectedRoute[0]).to.eql(['united-states','calif']);
+        expect(fx.selectedRoute[1]).to.eql(['united-states','ariz']);
+      });
     });
   });
 });

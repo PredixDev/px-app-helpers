@@ -268,7 +268,7 @@
             return;
           }
 
-          const item = this._assetGraph.getNodeAtRoute(ref.base);
+          const item = this._assetGraph.getNodeAtRoute(ref.base, this.keys.id);
           if (item === this.active) {
             return;
           }
@@ -291,7 +291,7 @@
             for (let i=0; i<ref.base.length; i++) {
               this._squashActiveChange = true;
               this.active = ref.base.map(route => {
-                const item = this._assetGraph.getNodeAtRoute(route);
+                const item = this._assetGraph.getNodeAtRoute(route, this.keys.id);
                 if (!item) {
                   throw new Error(`The following item could not be found in the items graph:
                     ${JSON.stringify(item)}`);
