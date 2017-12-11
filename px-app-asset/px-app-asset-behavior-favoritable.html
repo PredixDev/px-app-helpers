@@ -30,20 +30,6 @@
         },
 
         /**
-         * A copy of the favorited items, used to keep track of changes to the
-         * favorited array without changing the favorited array until explicitly
-         * instructed to do so.
-         *
-         */
-        tempFaves: {
-          type: Object,
-          notify: true,
-          value: function() {
-            return [];
-          }
-        },
-
-        /**
          * The route to the favorited item as an array of strings. Use this property
          * to set the favorited item by route, or to bind to updates when the
          * favorited item is changed. Changing this property will automatically
