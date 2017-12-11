@@ -1,3 +1,8 @@
+v2.0.2
+===================
+* Use custom routes to sync selected <> selectedRoute in px-app-asset Selectable
+  and Activatable behaviors
+
 v2.0.1
 ===================
 * Undefined check in listener
