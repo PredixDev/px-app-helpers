@@ -1,3 +1,9 @@
+v2.1.0
+===================
+px-app-asset changes:
+* Adds `PxAppAssetFavoritable` behavior. Works similarly to the selectable and
+  activatable behaviors but holds a list of currently favorited items.
+
 v2.0.2
 ===================
 * Use custom routes to sync selected <> selectedRoute in px-app-asset Selectable
