@@ -1,3 +1,8 @@
+v2.1.1
+===================
+px-app-asset changes:
+* Clear out `favorited` array if items is re-assigned to a new object
+
 v2.1.0
 ===================
 px-app-asset changes:
