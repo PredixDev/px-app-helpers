@@ -124,6 +124,9 @@
           if (typeof this.select === 'function') {
             this.select(null);
           }
+          if (typeof this.favorite === 'function') {
+            this.favorite(null);
+          }
         }
 
         this._assetGraph = this._createAssetGraph();
@@ -152,6 +155,9 @@
         }
         if (typeof this.select === 'function') {
           this.select(null);
+        }
+        if (typeof this.favorite === 'function') {
+          this.favorite(null);
         }
       }
     },
