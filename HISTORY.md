@@ -1,3 +1,8 @@
+v2.1.2
+===================
+px-app-route changes:
+* Fix px-app-route bugs impacting Polymer 2 apps
+
 v2.1.1
 ===================
 px-app-asset changes:
