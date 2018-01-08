@@ -356,31 +356,51 @@ to use the static methods to encode and decode model routes/paths.
       },
 
       _computeAppNavPathString: function(updateNavRoute, navRoute, segmentPathsWith) {
-        if (!updateNavRoute) return;
-
-        if (navRoute === null || (Array.isArray(navRoute) && navRoute.length === 0)) {
-          return '';
-        }
+        if (
+          typeof updateNavRoute === 'undefined' ||
+          typeof navRoute === 'undefined' ||
+          typeof segmentPathsWith === 'undefined' ||
+          !updateNavRoute ||
+          navRoute === null ||
+          (Array.isArray(navRoute) && navRoute.length === 0)
+        ) { return ''; }
 
         if (Array.isArray(navRoute) && navRoute.length > 0) {
           return navRoute.join(segmentPathsWith);
         }
+
+        return '';
       },
 
       _computeAppAssetPathString: function(updateAssetRoute, assetRoute, segmentPathsWith) {
-        if (!updateAssetRoute) return;
-
-        if (assetRoute === null || (Array.isArray(assetRoute) && assetRoute.length === 0)) {
-          return '';
-        }
+        if (
+          typeof updateAssetRoute === 'undefined' ||
+          typeof assetRoute === 'undefined' ||
+          typeof segmentPathsWith === 'undefined' ||
+          !updateAssetRoute ||
+          assetRoute === null ||
+          (Array.isArray(assetRoute) && assetRoute.length === 0)
+        ) { return ''; }
 
         if (Array.isArray(assetRoute) && assetRoute.length > 0) {
           return assetRoute.join(segmentPathsWith);
         }
+
+        return '';
       },
 
       _computePath: function(updateNavRoute, navPath, updateAssetRoute, assetPath, pathSegment, modelSegment, useHash) {
-        if ((!updateNavRoute && !updateAssetRoute) || (navPath === '' && assetPath === '')) return;
+        if (
+          typeof updateNavRoute === 'undefined' ||
+          typeof navPath === 'undefined' ||
+          typeof updateAssetRoute === 'undefined' ||
+          typeof assetPath === 'undefined' ||
+          typeof pathSegment === 'undefined' ||
+          typeof modelSegment === 'undefined' ||
+          typeof useHash === 'undefined' ||
+          (!updateNavRoute && !updateAssetRoute) ||
+          (navPath === '' && assetPath === '')
+        ) { return; }
 
         // If we're routing with a has, prefix with a `/` so the url looks nice
         var path = useHash ? pathSegment : '';

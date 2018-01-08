@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web Component Test : Fixture for px-app-route</title>
+
+    <!-- COMMON TEST IMPORTS -->
+    <!-- Loads webcomponents.js polyfill is provided by the page for browsers that don't support html imports -->
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <!-- Load web-component-tester's browser.js test runner -->
+    <script src="../../web-component-tester/browser.js"></script>
+    <!-- Load Polymer -->
+    <link rel="import" href="../../polymer/polymer.html"/>
+    <!-- Retain this link for px-theme.html -->
+    <!-- px-theme is needed for WCT to run without errors -->
+    <link rel="import" href="../../px-theme/px-theme-styles.html"/>
+
+    <!-- LOCAL IMPORTS -->
+    <!-- Load local components -->
+    <link rel="import" href="../../app-route/app-location.html"/>
+    <link rel="import" href="../px-app-route/px-app-route.html"/>
+    <!-- Load tests -->
+    <script src="px-app-route-tests.js"></script>
+  </head>
+
+  <body>
+    <custom-style>
+      <style include="px-theme-styles" is="custom-style"></style>
+    </custom-style>
+
+    <dom-module id="app-route-test-wrapper">
+      <template>
+        <app-location route="{{route}}" use-hash-as-path></app-location>
+        <px-app-route route="{{route}}" use-hash-as-path update-nav-route update-asset-route></px-app-route>
+      </template>
+      <script>
+        Polymer({ is: 'app-route-test-wrapper' });
+      </script>
+    </dom-module>
+
+    <test-fixture id="AppRouteFixture">
+      <template>
+        <app-route-test-wrapper></app-route-test-wrapper>
+      </template>
+    </test-fixture>
+  </body>
+</html>
