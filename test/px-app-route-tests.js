@@ -8,6 +8,10 @@ describe('<px-app-route>', () => {
   let appRoute;
   let originalLocation;
 
+  before(() => {
+    Polymer({ is: 'app-route-test-wrapper' });
+  });
+
   beforeEach((done) => {
     originalLocation = window.location.toString();
     fx = fixture('AppRouteFixture');

@@ -20,10 +20,7 @@
     <!-- Load local components -->
     <link rel="import" href="../../app-route/app-location.html"/>
     <link rel="import" href="../px-app-route/px-app-route.html"/>
-    <!-- Load tests -->
-    <script src="px-app-route-tests.js"></script>
   </head>
-
   <body>
     <custom-style>
       <style include="px-theme-styles" is="custom-style"></style>
@@ -34,9 +31,6 @@
         <app-location route="{{route}}" use-hash-as-path></app-location>
         <px-app-route route="{{route}}" use-hash-as-path update-nav-route update-asset-route></px-app-route>
       </template>
-      <script>
-        Polymer({ is: 'app-route-test-wrapper' });
-      </script>
     </dom-module>
 
     <test-fixture id="AppRouteFixture">
@@ -44,5 +38,8 @@
         <app-route-test-wrapper></app-route-test-wrapper>
       </template>
     </test-fixture>
+
+    <!-- Load tests -->
+    <script src="px-app-route-tests.js"></script>
   </body>
 </html>
