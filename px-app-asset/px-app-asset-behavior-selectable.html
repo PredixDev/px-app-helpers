@@ -308,6 +308,12 @@
       },
 
       _updateSelectedFromRoute(route) {
+        if (!this.selected && (route === null || (Array.isArray(route) && !route.length))) {
+          /* We hit this case when the asset graph is created early (before our
+             default `selectedRoute` property has been evaluated to null) and
+             we call into this method. We should do nothing in this case. */
+          return;
+        }
         if (this.selected && (route === null || (Array.isArray(route) && !route.length))) {
           this._squashSelectedChange = true;
           this.deselect(this.selected, 'ROUTE_CHANGED');
