@@ -1,3 +1,10 @@
+v2.1.3
+===================
+px-app-asset changes:
+* Fix property set order bug in px-app-asset-selectable behavior
+px-app-route changes:
+* Update tests to fix timing issues in Firefox
+
 v2.1.2
 ===================
 px-app-route changes:
