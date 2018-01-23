@@ -204,13 +204,22 @@ describe('PxAppBehavior.AssetSelectable', function () {
       expect(fx.selected).to.equal(null);
     });
 
-    it('deselects the selected item an item when `selectedRoute` changes to an empty array', function() {
+    it('deselects the selected item when `selectedRoute` changes to an empty array', function() {
       var item = data[0].children[0].children[0];
       fx.select(item);
       expect(fx.selected).to.equal(item);
       fx.selectedRoute = [];
       expect(fx.selected).to.equal(null);
     });
+
+    it('deselects the selected item when `multiSelect` changes to true', function() {
+      var item = data[0].children[0].children[0];
+      fx.select(item);
+      fx.multiSelect = true;
+      expect(fx.selected).to.eql([]);
+    });
+
+
   });
 
   describe('multi select', function() {
@@ -478,6 +487,15 @@ describe('PxAppBehavior.AssetSelectable', function () {
         expect(fx.selectedRoute.length).to.equal(2);
         expect(fx.selectedRoute[0]).to.eql(['united-states','calif']);
         expect(fx.selectedRoute[1]).to.eql(['united-states','ariz']);
+      });
+
+      it('downselects to the first item when multiselect is disabled', function() {
+        var item1 = customKeysData[0].assetChildren[0];
+        var item2 = customKeysData[0].assetChildren[1];
+        fx.select(item1);
+        fx.select(item2);
+        fx.multiSelect = false;
+        expect(fx.selected).to.equal(item1);
       });
     });
   });

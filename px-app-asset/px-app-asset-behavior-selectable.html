@@ -177,7 +177,7 @@
           this.selectedRoute = [];
         }
         if (!allowMultiSelect && Array.isArray(this.selected)) {
-          this.selected = this.selected.length ? [this.selected[0]] : [];
+          this.selected = this.selected.length ? this.selected[0] : null;
         }
       },
 

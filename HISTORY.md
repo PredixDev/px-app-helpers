@@ -1,3 +1,8 @@
+v2.1.4
+===================
+px-app-asset changes:
+* fix typing of properties when multi-select and multi-activate change
+
 v2.1.3
 ===================
 px-app-asset changes:

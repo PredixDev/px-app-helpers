@@ -139,7 +139,7 @@
           this.activeRoute = [];
         }
         if (!allowMultiActivate && Array.isArray(this.active)) {
-          this.active = this.active.length ? [this.active[0]] : [];
+          this.active = this.active.length ? this.active[0] : null;
         }
       },
 
