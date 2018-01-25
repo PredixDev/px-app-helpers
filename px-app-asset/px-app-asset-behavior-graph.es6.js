@@ -518,7 +518,18 @@
       }
 
       const parent = node !== null ? node : this._rootNode;
-      const childArray = Array.isArray(children) ? children : [children];
+      let childArray;
+      if (children === null) {
+        childArray = this.getChildren(parent);
+      } else if (Array.isArray(children)) {
+        childArray = children;
+      } else {
+        childArray = [children];
+      }
+      if (!childArray) {
+        /* Can't figure out how to get the children to remove, give up */
+        return;
+      }
       for (let i = 0; i < childArray.length; i++) {
         if (!this.hasNode(childArray[i])) {
           throw new Error('Child node(s) cannot be removed from the graph if it they were never added');

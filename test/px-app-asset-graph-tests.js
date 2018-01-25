@@ -185,6 +185,13 @@ describe('PxAppBehavior.AssetGraph', function () {
       expect(rootChildren.length).to.equal(1);
     });
 
+    it('removes all children from a parent node if `removeChildren` is called with null', function() {
+      var parent = data[0].children[0];
+      fx.removeChildren(parent, null);
+      var parentChildren = fx._assetGraph.getChildren(parent);
+      expect(parentChildren.length).to.equal(0);
+    });
+
     it('updates the `__rootItems` array when items are removed from the root', function() {
       var removed = data[1];
       fx.removeChildren(null, [removed]);
