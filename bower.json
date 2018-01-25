@@ -1,6 +1,6 @@
 {
   "name": "px-app-helpers",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "main": [
     "px-app-helpers.html"
   ],
