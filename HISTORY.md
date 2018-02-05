@@ -1,3 +1,8 @@
+v2.1.6
+===================
+px-app-header changes:
+* Fix app header demo.
+
 v2.1.5
 ===================
 px-app-asset changes:
