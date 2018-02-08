@@ -261,46 +261,60 @@
         if (!ref || !ref.path || !this._assetGraph || this._squashActiveRouteChange) return;
 
         if (!this.multiActivate && ref.path === 'activeRoute') {
-          if (this.active && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
-            this._squashActiveChange = true;
-            this.deactivate(this.active, 'ROUTE_CHANGED');
-            this._squashActiveChange = false;
-            return;
-          }
-
-          const item = this._assetGraph.getNodeAtRoute(ref.base, this.keys.id);
-          if (item === this.active) {
-            return;
-          }
-          else if (item) {
-            this.activate(item, 'ROUTE_CHANGED');
-          } else {
-            throw new Error(`The route ${JSON.stringify(ref.base)} could not be found in the items graph.`)
-          }
+          this._updateActiveFromRoute(ref.base);
         }
 
         if (this.multiActivate && (ref.path === 'activeRoute' || ref.path == 'activeRoute.splices')) {
-          if (this.active.length && (ref.base === null || (Array.isArray(ref.base) && !ref.base.length))) {
+          this._updateActiveFromRouteMulti(ref.base);
+        }
+      },
+
+      _updateActiveFromRoute(route) {
+        if (!this.active && (route === null || (Array.isArray(route) && !route.length))) {
+          /* We hit this case when the asset graph is created early (before our
+             default `activeRoute` property has been evaluated to null) and
+             we call into this method. We should do nothing in this case. */
+          return;
+        }
+        if (this.active && (route === null || (Array.isArray(route) && !route.length))) {
+          this._squashActiveChange = true;
+          this.deactivate(this.active, 'ROUTE_CHANGED');
+          this._squashActiveChange = false;
+          return;
+        }
+
+        const item = this._assetGraph.getNodeAtRoute(route, this.keys.id);
+        if (item === this.active) {
+          return;
+        }
+        else if (item) {
+          this.activate(item, 'ROUTE_CHANGED');
+        } else {
+          throw new Error(`The route ${JSON.stringify(route)} could not be found in the items graph.`)
+        }
+      },
+
+      _updateActiveFromRouteMulti(route) {
+        if (this.active.length && (route === null || (Array.isArray(route) && !route.length))) {
+          this._squashActiveChange = true;
+          this.deactivate(null, 'ROUTE_CHANGED');
+          this._squashActiveChange = false;
+          return;
+        }
+
+        if (Array.isArray(route)) {
+          for (let i=0; i<route.length; i++) {
             this._squashActiveChange = true;
-            this.deactivate(null, 'ROUTE_CHANGED');
+            this.active = route.map(route => {
+              const item = this._assetGraph.getNodeAtRoute(route, this.keys.id);
+              if (!item) {
+                throw new Error(`The following item could not be found in the items graph:
+                  ${JSON.stringify(item)}`);
+              }
+
+              return item;
+            });
             this._squashActiveChange = false;
-            return;
-          }
-
-          if (Array.isArray(ref.base)) {
-            for (let i=0; i<ref.base.length; i++) {
-              this._squashActiveChange = true;
-              this.active = ref.base.map(route => {
-                const item = this._assetGraph.getNodeAtRoute(route, this.keys.id);
-                if (!item) {
-                  throw new Error(`The following item could not be found in the items graph:
-                    ${JSON.stringify(item)}`);
-                }
-
-                return item;
-              });
-              this._squashActiveChange = false;
-            }
           }
         }
       },
