@@ -362,6 +362,15 @@
         }
       },
 
+      _routeIsDifferent(r1, r2) {
+        if (!r1 || !r2) return true;
+        if (r1.length !== r2.length) return true;
+        for (let i=0; i<r1.length; i++) {
+          if (r1[i] !== r2[i]) return true;
+        }
+        return false;
+      },
+
       _activateAsset(item, source) {
         const {route, path} = this._assetGraph.getInfo(item, this.keys.id);
         this._lastActivation = {
