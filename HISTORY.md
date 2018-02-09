@@ -1,3 +1,7 @@
+v2.1.8
+===================
+* Fix demo for IE
+
 v2.1.7
 ===================
 px-app-asset changes:
