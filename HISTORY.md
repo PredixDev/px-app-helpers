@@ -1,3 +1,7 @@
+v2.1.7
+===================
+* add es5 custom elements shim to demo page
+
 v2.1.6
 ===================
 px-app-header changes:
