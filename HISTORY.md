@@ -1,3 +1,7 @@
+v2.1.9
+===================
+* add es5 custom elements shim to demo page
+
 v2.1.8
 ===================
 * Fix demo for IE
@@ -9,7 +13,6 @@ px-app-asset changes:
 * Add activate tests, copied 1-for-1 from selected tests
 * Port changed code from selected behavior back to activatable behavior to fix
   race condition where asset graph was ready earlier than expected
-
 
 v2.1.6
 ===================
