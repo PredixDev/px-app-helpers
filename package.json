@@ -9,7 +9,7 @@
         "type": "git",
         "url": "https://github.com/PredixDev/px-app-helpers.git"
     },
-    "homepage": "http://predix.io/",
+    "homepage": "https://www.predix-ui.com/",
     "devDependencies": {
         "babel-cli": "^6.24.1",
         "babel-plugin-transform-flow-strip-types": "^6.22.0",
