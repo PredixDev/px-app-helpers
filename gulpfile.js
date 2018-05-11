@@ -36,6 +36,7 @@ const cache = require('gulp-cached');
 const flow = require('gulp-flowtype');
 const exec = require('child_process').exec;
 const through = require('through2');
+const { ensureLicense } = require('ensure-px-license');
 
 const sassOptions = {
   importer: importOnce,
@@ -77,6 +78,7 @@ gulp.task('sass', function() {
         return path.basename(file.path, path.extname(file.path)) + '-styles';
       }
     }))
+    .pipe(ensureLicense())
     .pipe(rename(file => {
       file.dirname = file.dirname.replace('sass', 'css');
     }))
@@ -184,6 +186,12 @@ gulp.task('bump:major', function(){
   .pipe(gulp.dest('./'));
 });
 
+gulp.task('license', function() {
+  return gulp.src(['./**/*.{html,js,css,scss}', '!./node_modules/**/*', '!./bower_components?(-1.x)/**/*'])
+    .pipe(ensureLicense())
+    .pipe(gulp.dest('.'));
+});
+
 gulp.task('default', function(callback) {
-  gulpSequence('clean', 'sass', 'flow')(callback);
+  gulpSequence('clean', 'sass', 'flow', 'license')(callback);
 });
